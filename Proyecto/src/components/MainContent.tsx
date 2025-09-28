@@ -4,10 +4,18 @@ interface MainContentProps {
   extraComponent?: React.ReactNode;
 }
 
-const MainContent: React.FC<MainContentProps> = ({ activeTab, extraComponent }) => {
+const MainContent: React.FC<MainContentProps> = ({
+  activeTab,
+  extraComponent,
+}) => {
   return (
-    <main style={{ flex: 1, backgroundColor: "#f80000ff" }}>
-      {activeTab === "home" && <div><h2>Inicio del Dashboard</h2><p>Bienvenido a tu panel principal.</p></div>}
+    <main>
+      {activeTab === "home" && (
+        <div>
+          <h2>Inicio del Dashboard</h2>
+          <p>Bienvenido a tu panel principal.</p>
+        </div>
+      )}
       {extraComponent}
     </main>
   );

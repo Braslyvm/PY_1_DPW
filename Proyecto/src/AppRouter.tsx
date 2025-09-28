@@ -9,8 +9,8 @@ import InicioSesion from "./components/InicioSesion";
 import Registro from "./components/Registro";
 import Dashboard from "./components/Dashboard";
 import Recuperar from "./components/RecuperarContra";
-
-
+///import DetallesCuenta from "./components/DetallesCuenta";
+//import VerCuentas from "./components/verCuentas";
 
 const Profile = () => (
   <div>
@@ -29,6 +29,7 @@ const AppRouter: React.FC = () => {
         <Route path="/profile" element={<Profile />} />
         <Route path="/register" element={<Registro />} />
         <Route path="/recuperar-contra" element={<Recuperar />} />
+       
       </Routes>
     </Router>
   );

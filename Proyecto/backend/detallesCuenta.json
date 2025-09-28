@@ -1,0 +1,60 @@
+[
+  {
+    "account_id": "CR01-1234-5678-000000000001",
+    "movimientos": [
+      {
+        "id": "TXN-0001",
+        "fecha": "2025-09-25T10:15:00Z",
+        "tipo": "CREDITO",
+        "descripcion": "Depósito nómina",
+        "moneda": "CRC",
+        "saldo": 1523400.5
+      },
+      {
+        "id": "TXN-0002",
+        "fecha": "2025-09-26T08:30:00Z",
+        "tipo": "DEBITO",
+        "descripcion": "Pago servicios agua",
+        "moneda": "CRC",
+        "saldo": 1518400.5
+      },
+      {
+        "id": "TXN-0003",
+        "fecha": "2025-09-27T12:45:00Z",
+        "tipo": "DEBITO",
+        "descripcion": "Compra supermercado",
+        "moneda": "CRC",
+        "saldo": 1513400.5
+      }
+    ]
+  },
+  {
+    "account_id": "CR01-4321-8765-000000000002",
+    "movimientos": [
+      {
+        "id": "TXN-1001",
+        "fecha": "2025-09-20T14:20:00Z",
+        "tipo": "CREDITO",
+        "descripcion": "Transferencia internacional",
+        "moneda": "USD",
+        "saldo": 2500.0
+      },
+      {
+        "id": "TXN-1002",
+        "fecha": "2025-09-22T09:00:00Z",
+        "tipo": "DEBITO",
+        "descripcion": "Pago suscripción mensual",
+        "moneda": "USD",
+        "saldo": 2450.0
+      },
+      {
+        "id": "TXN-1003",
+        "fecha": "2025-09-24T18:10:00Z",
+        "tipo": "DEBITO",
+        "descripcion": "Compra en línea",
+        "moneda": "USD",
+        "saldo": 2400.0
+      }
+    ]
+  }
+]

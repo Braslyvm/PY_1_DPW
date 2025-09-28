@@ -1,51 +1,53 @@
-{
-  "tipoDocumento": "Nacional",
-  "numeroDocumento": "7-0308-0520",
-  "username": "usuario_ejemplo",
-  "nombreCompleto": "Juan Pérez",
-  "fechaNacimiento": "2004-05-18",
-  "correo": "juanperez@gmail.com",
-  "telefono": "+506 7195-0212",
-  "password": "Elp703080520",
-  "confirmarPassword": "Elp703080520",
-  "aceptarTerminos": true,
-  "token": null,
-  "cuentas": [
-    {
-      "account_id": "CR01-1234-5678-000000000001",
-      "alias": "Ahorros Principal",
-      "tipo": "Ahorro",
-      "moneda": "CRC",
-      "saldo": 1523400.5
-    },
-    {
-      "account_id": "CR01-4321-8765-000000000002",
-      "alias": "Corriente USD",
-      "tipo": "Corriente",
-      "moneda": "USD",
-      "saldo": 2500.0
-    }
-  ],
-  "tarjetas": [
-    {
-      "card_id": "CARD-001",
-      "tipo": "Gold",
-      "numeroEnmascarado": "1234 **** **** 5678",
-      "exp": "12/26",
-      "titular": "Juan Pérez",
-      "moneda": "CRC",
-      "limite": 5000000.0,
-      "saldo": 1250000.5
-    },
-    {
-      "card_id": "CARD-002",
-      "tipo": "Platinum",
-      "numeroEnmascarado": "4321 **** **** 8765",
-      "exp": "08/27",
-      "titular": "Juan Pérez",
-      "moneda": "USD",
-      "limite": 10000.0,
-      "saldo": 2500.0
-    }
-  ]
-}
+[
+  {
+    "tipoDocumento": "Nacional",
+    "numeroDocumento": "7-0308-0520",
+    "username": "xxxxx",
+    "nombreCompleto": "Juan Pérez",
+    "fechaNacimiento": "2004-05-18",
+    "correo": "juanperez@gmail.com",
+    "telefono": "+506 7195-0212",
+    "password": "Elp703080520",
+    "confirmarPassword": "Elp703080520",
+    "aceptarTerminos": true,
+    "token": null,
+    "cuentas": [
+      {
+        "account_id": "CR01-1234-5678-000000000001",
+        "alias": "Ahorros Principal",
+        "tipo": "Ahorro",
+        "moneda": "CRC",
+        "saldo": 1523400.5
+      },
+      {
+        "account_id": "CR01-4321-8765-000000000002",
+        "alias": "Corriente USD",
+        "tipo": "Corriente",
+        "moneda": "USD",
+        "saldo": 2500.0
+      }
+    ],
+    "tarjetas": [
+      {
+        "card_id": "CARD-001",
+        "tipo": "Gold",
+        "numeroEnmascarado": "1234 **** **** 5678",
+        "exp": "12/26",
+        "titular": "Juan Pérez",
+        "moneda": "CRC",
+        "limite": 5000000.0,
+        "saldo": 1250000.5
+      },
+      {
+        "card_id": "CARD-002",
+        "tipo": "Platinum",
+        "numeroEnmascarado": "4321 **** **** 8765",
+        "exp": "08/27",
+        "titular": "Juan Pérez",
+        "moneda": "USD",
+        "limite": 10000.0,
+        "saldo": 2500.0
+      }
+    ]
+  }
+]

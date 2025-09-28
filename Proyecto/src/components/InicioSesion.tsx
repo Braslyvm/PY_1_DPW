@@ -25,6 +25,8 @@ const InicioSesion: React.FC = () => {
         })
         .then((data) => {
           console.log("Inicio de sesión exitoso:", data);
+          // Guardar username en localStorage
+          localStorage.setItem("username", data.user.username);
           navigate("/dashboard");
         })
         .catch((error) => {
@@ -73,14 +75,15 @@ const InicioSesion: React.FC = () => {
 
         {/* Usuario */}
         <div className="form-group">
-          <label htmlFor="username">Correo electrónico</label>
+          <label htmlFor="username">Usuario</label>
+
           <div className="input-wrapper">
             <i className="fas fa-envelope"></i>
             <input
               type="text"
               id="username"
               name="username"
-              placeholder="nombre@ejemplo.com"
+              placeholder="Usuario"
               required
             />
           </div>
@@ -111,10 +114,7 @@ const InicioSesion: React.FC = () => {
 
         {/* Navegación */}
         <nav>
-          <button
-            type="button"
-            onClick={() => navigate("/recuperar-contra")}
-          >
+          <button type="button" onClick={() => navigate("/recuperar-contra")}>
             ¿Olvidaste tu contraseña?
           </button>
 

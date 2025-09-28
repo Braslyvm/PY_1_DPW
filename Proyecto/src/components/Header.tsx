@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import {
   CButton,
   CCollapse,
@@ -9,14 +9,14 @@ import {
   CNavbarNav,
   CNavItem,
   CNavLink,
-} from '@coreui/react'
+} from "@coreui/react";
 
 interface HeaderProps {
-  setActiveTab: (tab: string) => void
+  setActiveTab: (tab: string) => void;
 }
 
 const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(false);
 
   return (
     <CNavbar expand="lg" colorScheme="dark" className="bg-dark">
@@ -30,14 +30,25 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
         <CCollapse className="navbar-collapse" visible={visible}>
           <CNavbarNav className="me-auto">
             <CNavItem>
-              <CNavLink onClick={() => setActiveTab("hello")} style={{ cursor: "pointer" }}>
+              <CNavLink
+                onClick={() => setActiveTab("hello")}
+                style={{ cursor: "pointer" }}
+              >
                 Hola Mundo
+              </CNavLink>
+            </CNavItem>
+            <CNavItem>
+              <CNavLink
+                onClick={() => setActiveTab("cuentas")}
+                style={{ cursor: "pointer" }}
+              >
+                Cuentas
               </CNavLink>
             </CNavItem>
           </CNavbarNav>
         </CCollapse>
       </CContainer>
     </CNavbar>
-  )
-}
-export default Header
+  );
+};
+export default Header;

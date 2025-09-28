@@ -1,0 +1,99 @@
+/* Contenedor principal */
+.contenedor_main {
+  max-width: 1200px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow: hidden;
+}
+
+/* Header sticky (reutilizable con ID) */
+#cuenta-header {
+  position: sticky;
+  top: 0;
+  background-color: #ffffff;
+  padding: 10px 0;
+  border-bottom: 2px solid #4caf50;
+  z-index: 10;
+  text-align: center;
+}
+
+#cuenta-header h1 {
+  margin: 0;
+  font-size: 1.8rem;
+  color: #333;
+}
+
+/* Contenedor de scroll para la tabla (reutilizable con ID) */
+#cuenta-main {
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: 500px; /* limita el alto para scroll vertical */
+}
+
+/* Tabla */
+#cuenta-main table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 600px; /* permite scroll horizontal en pantallas pequeñas */
+}
+
+#cuenta-main thead {
+  background-color: #4caf50;
+  color: white;
+  position: sticky;
+  top: 50px; /* ajusta según altura del header */
+  z-index: 5;
+}
+
+#cuenta-main th,
+#cuenta-main td {
+  padding: 12px 15px;
+  border: 1px solid #ddd;
+  text-align: left;
+  font-size: 0.95rem;
+}
+
+#cuenta-main tbody tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+#cuenta-main tbody tr:hover {
+  background-color: #e0f7fa;
+}
+
+/* Botón volver */
+.contenedor_main button {
+  padding: 10px 20px;
+  border: none;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.contenedor_main button:hover {
+  background-color: #45a049;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .contenedor_main {
+    padding: 10px;
+  }
+  #cuenta-main th,
+  #cuenta-main td {
+    padding: 8px 10px;
+    font-size: 0.85rem;
+  }
+  #cuenta-header h1 {
+    font-size: 1.4rem;
+  }
+}
