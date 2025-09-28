@@ -145,3 +145,56 @@
 .login-container > button:hover {
   color: var(--accent);
 }
+
+@media (max-width: 480px) {
+  .login-container {
+    padding: 0.5rem;
+  }
+
+  .login-container form {
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    max-width: 100%;
+    gap: 1rem;
+  }
+  .login-container h1 {
+    font-size: 1rem;
+    margin-bottom: 0.3rem;
+  }
+
+  .login-container p {
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  .input-wrapper input {
+    padding: 0.5rem 1.8rem 0.5rem 1.8rem;
+    font-size: 0.85rem;
+    border-radius: 0.4rem;
+  }
+
+  .input-wrapper i {
+    font-size: 0.8rem;
+    left: 0.5rem;
+  }
+
+  .toggle-password {
+    right: 1rem;
+    font-size: 0.8rem;
+  }
+
+  .login-container button[type="submit"] {
+    padding: 0.6rem;
+    font-size: 0.85rem;
+    border-radius: 0.4rem;
+  }
+
+  /* Botones de navegación compactos */
+  .login-container nav button {
+    font-size: 0.7rem;
+    margin-top: 0.3rem;
+  }
+}
+
+
