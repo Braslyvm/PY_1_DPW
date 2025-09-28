@@ -13,7 +13,16 @@ const FILE_PATH = path.join(__dirname, "usuarios.json");
 const DETALLES_CUENTAS_PATH = path.join(__dirname, "detallesCuenta.json");
 
 const app = express();
-app.use(cors());
+
+// ====== Configuración CORS ======
+app.use(
+  cors({
+    origin: "https://banconsfms.netlify.app", // dominio frontend en Netlify
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    credentials: true,
+  })
+);
+
 app.use(express.json());
 
 // ================= Registro de usuario =================
@@ -27,29 +36,18 @@ app.post("/api/registro", (req, res) => {
       usuarios = JSON.parse(data);
     }
 
-    const usernameNorm = (usuario.username || "")
-      .toString()
-      .trim()
-      .toLowerCase();
+    const usernameNorm = (usuario.username || "").toString().trim().toLowerCase();
     const correoNorm = (usuario.correo || "").toString().trim().toLowerCase();
     const numeroDocumento = (usuario.numeroDocumento || "").toString().trim();
-    const telefono = (usuario.telefono || usuario.numeroCelular || "")
-      .toString()
-      .trim();
+    const telefono = (usuario.telefono || usuario.numeroCelular || "").toString().trim();
 
     const conflicts = {};
     usuarios.forEach((u) => {
-      if (
-        u.username &&
-        u.username.toString().trim().toLowerCase() === usernameNorm
-      )
+      if (u.username && u.username.toString().trim().toLowerCase() === usernameNorm)
         conflicts.username = "El username ya está en uso.";
       if (u.correo && u.correo.toString().trim().toLowerCase() === correoNorm)
         conflicts.correo = "El correo ya está en uso.";
-      if (
-        u.numeroDocumento &&
-        u.numeroDocumento.toString().trim() === numeroDocumento
-      )
+      if (u.numeroDocumento && u.numeroDocumento.toString().trim() === numeroDocumento)
         conflicts.numeroDocumento = "El número de documento ya está en uso.";
       if (
         (u.telefono && u.telefono.toString().trim() === telefono) ||
@@ -59,9 +57,7 @@ app.post("/api/registro", (req, res) => {
     });
 
     if (Object.keys(conflicts).length > 0) {
-      return res
-        .status(409)
-        .json({ mensaje: "Este usuario ya existe", conflicts });
+      return res.status(409).json({ mensaje: "Este usuario ya existe", conflicts });
     }
 
     if (!usuario.cuentas) usuario.cuentas = [];
@@ -93,6 +89,7 @@ app.get("/api/usuarios", (req, res) => {
 // ================= Login =================
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
+  console.log("Intento de login:", username);
 
   try {
     let usuarios = [];
@@ -105,8 +102,10 @@ app.post("/api/login", (req, res) => {
     );
 
     if (user) {
+      console.log("✅ Login exitoso:", username);
       res.json({ mensaje: "Inicio de sesión exitoso", user });
     } else {
+      console.warn("❌ Credenciales inválidas para:", username);
       res.status(401).json({ mensaje: "Credenciales inválidas" });
     }
   } catch (err) {
@@ -122,8 +121,7 @@ app.get("/api/usuarios/:username/cuentas", (req, res) => {
     if (!fs.existsSync(FILE_PATH)) return res.status(404).json([]);
     const usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
     const user = usuarios.find((u) => u.username === username);
-    if (!user)
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    if (!user) return res.status(404).json({ mensaje: "Usuario no encontrado" });
     res.json(user.cuentas || []);
   } catch (err) {
     console.error(err);
@@ -138,8 +136,7 @@ app.get("/api/usuarios/:username/tarjetas", (req, res) => {
     if (!fs.existsSync(FILE_PATH)) return res.status(404).json([]);
     const usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
     const user = usuarios.find((u) => u.username === username);
-    if (!user)
-      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    if (!user) return res.status(404).json({ mensaje: "Usuario no encontrado" });
     res.json(user.tarjetas || []);
   } catch (err) {
     console.error(err);
@@ -155,14 +152,10 @@ app.get("/api/cuentas/:accountId", (req, res) => {
   try {
     if (!fs.existsSync(DETALLES_CUENTAS_PATH)) {
       console.log("Archivo no encontrado:", DETALLES_CUENTAS_PATH);
-      return res
-        .status(404)
-        .json({ mensaje: "Archivo de detalles no encontrado" });
+      return res.status(404).json({ mensaje: "Archivo de detalles no encontrado" });
     }
 
-    const detalles = JSON.parse(
-      fs.readFileSync(DETALLES_CUENTAS_PATH, "utf-8")
-    );
+    const detalles = JSON.parse(fs.readFileSync(DETALLES_CUENTAS_PATH, "utf-8"));
     console.log("Archivo leído, número de cuentas:", detalles.length);
 
     const cuenta = detalles.find((c) => c.account_id === accountId);
@@ -183,5 +176,5 @@ app.get("/api/cuentas/:accountId", (req, res) => {
 // ================= Servidor =================
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
 });
