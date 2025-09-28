@@ -55,18 +55,24 @@ const Registro: FC = () => {
 
       const conflicts: { [key: string]: string } = {};
 
-  usuarios.forEach((u: UsuarioType) => {
+      usuarios.forEach((u: UsuarioType) => {
         if (u.username === usernameToCheck) {
-          conflicts.username = 'El username ya está en uso.';
+          conflicts.username = "El username ya está en uso.";
         }
-        if (form.numeroDocumento && u.numeroDocumento === form.numeroDocumento) {
-          conflicts.numeroDocumento = 'El número de documento ya está en uso.';
+        if (
+          form.numeroDocumento &&
+          u.numeroDocumento === form.numeroDocumento
+        ) {
+          conflicts.numeroDocumento = "El número de documento ya está en uso.";
         }
-        if (form.telefono && (u.numeroCelular === form.telefono || u.telefono === form.telefono)) {
-          conflicts.telefono = 'El número de teléfono ya está en uso.';
+        if (
+          form.telefono &&
+          (u.numeroCelular === form.telefono || u.telefono === form.telefono)
+        ) {
+          conflicts.telefono = "El número de teléfono ya está en uso.";
         }
         if (form.correo && u.correo === form.correo) {
-          conflicts.correo = 'El correo ya está en uso.';
+          conflicts.correo = "El correo ya está en uso.";
         }
       });
 
@@ -74,7 +80,7 @@ const Registro: FC = () => {
         setErrors((prev) => ({ ...prev, ...conflicts }));
       }
     } catch (error) {
-      console.error('Error al validar existencia de usuario:', error);
+      console.error("Error al validar existencia de usuario:", error);
     }
   };
 
@@ -142,8 +148,6 @@ const Registro: FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-
-   
 
     setLoading(true);
 
@@ -281,10 +285,14 @@ const Registro: FC = () => {
           </label>
           {errors.aceptarTerminos && <p>{errors.aceptarTerminos}</p>}
         </div>
-
-        <button type="submit" disabled={loading || !form.aceptarTerminos}>
-          {loading ? "Registrando..." : "Registrar"}
-        </button>
+        <nav>
+          <button type="submit" disabled={loading || !form.aceptarTerminos}>
+            {loading ? "Registrando..." : "Registrar"}
+          </button>
+          <button type="button" onClick={() => navigate("/login")}>
+            Cancelar
+          </button>
+        </nav>
       </form>
 
       {showTerminos && (
