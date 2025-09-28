@@ -7,6 +7,7 @@ import DetallesCuenta from "./DetallesCuenta";
 import DetalleTarjeta from "./DetalleTarjeta";
 import VerTarjetas from "./VerTarjetas";
 import RegistroDeCuenta from "./registroDecuenta";
+import ConsultarPIN from "./RecuperarPin"
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("home");
@@ -58,6 +59,11 @@ const Dashboard: React.FC = () => {
             )}
             {activeTab === "registroCuenta" && (
               <RegistroDeCuenta
+                setActiveTab={() => setActiveTab(previousTab)} // Cancelar vuelve a la pestaña anterior
+              />
+            )}
+            {activeTab === "recuperarPin" && (
+              <ConsultarPIN
                 setActiveTab={() => setActiveTab(previousTab)} // Cancelar vuelve a la pestaña anterior
               />
             )}
