@@ -12,6 +12,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@coreui/coreui": "^5.4.3",
+    "@coreui/react": "^5.9.0",
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "react": "^19.1.1",
@@ -21,7 +23,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@types/react": "^19.1.13",
+    "@types/react": "^19.1.14",
     "@types/react-dom": "^19.1.9",
     "@types/react-router-dom": "^5.3.3",
     "@vitejs/plugin-react": "^5.0.3",
