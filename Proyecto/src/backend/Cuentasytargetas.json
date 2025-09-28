@@ -1,0 +1,71 @@
+{
+  "usuario": {
+    "user_id": "U001",
+    "username": "usuario_ejemplo",
+    "nombreCompleto": "Juan Pérez",
+    "correo": "juanperez@gmail.com",
+    "telefono": "+506 8888-8888",
+    "cuentas": [
+      {
+        "account_id": "CR01-1234-5678-000000000001",
+        "alias": "Ahorros Principal",
+        "tipo": "Ahorro",
+        "moneda": "CRC",
+        "saldo": 1523400.50
+      },
+      {
+        "account_id": "CR01-4321-8765-000000000002",
+        "alias": "Corriente USD",
+        "tipo": "Corriente",
+        "moneda": "USD",
+        "saldo": 2500.00
+      },
+      {
+        "account_id": "CR01-1111-2222-000000000003",
+        "alias": "Ahorros Vacaciones",
+        "tipo": "Ahorro",
+        "moneda": "CRC",
+        "saldo": 500000.00
+      },
+      {
+        "account_id": "CR01-3333-4444-000000000004",
+        "alias": "Cuenta Nómina",
+        "tipo": "Corriente",
+        "moneda": "CRC",
+        "saldo": 120000.75
+      }
+    ],
+    "tarjetas": [
+      {
+        "card_id": "CARD-001",
+        "tipo": "Gold",
+        "numeroEnmascarado": "1234 **** **** 5678",
+        "exp": "12/26",
+        "titular": "Juan Pérez",
+        "moneda": "CRC",
+        "limite": 5000000.00,
+        "saldo": 1250000.50
+      },
+      {
+        "card_id": "CARD-002",
+        "tipo": "Platinum",
+        "numeroEnmascarado": "4321 **** **** 8765",
+        "exp": "08/27",
+        "titular": "Juan Pérez",
+        "moneda": "USD",
+        "limite": 10000.00,
+        "saldo": 2500.00
+      },
+      {
+        "card_id": "CARD-003",
+        "tipo": "Black",
+        "numeroEnmascarado": "1111 **** **** 2222",
+        "exp": "03/28",
+        "titular": "Juan Pérez",
+        "moneda": "CRC",
+        "limite": 10000000.00,
+        "saldo": 7500000.00
+      }
+    ]
+  }
+}

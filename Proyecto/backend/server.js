@@ -1,6 +1,5 @@
-/*cd "C:\Users\MSI Stealth Studio\Desktop\Cursos 2025 s2\Desarrollo web\PY_1_DPW\Proyecto"
-npm run backend
-# este comando debe dejar el proceso en ejecución (no volver al prompt) */
+/* cd "C:\Users\MSI Stealth Studio\Desktop\Cursos 2025 s2\Desarrollo web\PY_1_DPW\Proyecto"
+   npm run backend */
 
 import express from "express";
 import fs from "fs";
@@ -18,17 +17,17 @@ app.use(express.json());
 
 const FILE_PATH = path.join(__dirname, "usuarios.json");
 
-/*Registra el usuario */
+// ================= Registro de usuario =================
 app.post("/api/registro", (req, res) => {
   const usuario = req.body;
   let usuarios = [];
+
   try {
     if (fs.existsSync(FILE_PATH)) {
       const data = fs.readFileSync(FILE_PATH, "utf-8");
       usuarios = JSON.parse(data);
     }
 
-    // Normalizar valores para comparación
     const usernameNorm = (usuario.username || "")
       .toString()
       .trim()
@@ -41,27 +40,17 @@ app.post("/api/registro", (req, res) => {
 
     const conflicts = {};
     usuarios.forEach((u) => {
-      if (
-        u.username &&
-        u.username.toString().trim().toLowerCase() === usernameNorm
-      ) {
+      if (u.username?.toString().trim().toLowerCase() === usernameNorm)
         conflicts.username = "El username ya está en uso.";
-      }
-      if (u.correo && u.correo.toString().trim().toLowerCase() === correoNorm) {
+      if (u.correo?.toString().trim().toLowerCase() === correoNorm)
         conflicts.correo = "El correo ya está en uso.";
-      }
-      if (
-        u.numeroDocumento &&
-        u.numeroDocumento.toString().trim() === numeroDocumento
-      ) {
+      if (u.numeroDocumento?.toString().trim() === numeroDocumento)
         conflicts.numeroDocumento = "El número de documento ya está en uso.";
-      }
       if (
-        (u.telefono && u.telefono.toString().trim() === telefono) ||
-        (u.numeroCelular && u.numeroCelular.toString().trim() === telefono)
-      ) {
+        u.telefono?.toString().trim() === telefono ||
+        u.numeroCelular?.toString().trim() === telefono
+      )
         conflicts.telefono = "El número de teléfono ya está en uso.";
-      }
     });
 
     if (Object.keys(conflicts).length > 0) {
@@ -69,6 +58,10 @@ app.post("/api/registro", (req, res) => {
         .status(409)
         .json({ mensaje: "Este usuario ya existe", conflicts });
     }
+
+    // Inicializar campos de cuentas y tarjetas si no existen
+    if (!usuario.cuentas) usuario.cuentas = [];
+    if (!usuario.tarjetas) usuario.tarjetas = [];
 
     usuarios.push(usuario);
     fs.writeFileSync(FILE_PATH, JSON.stringify(usuarios, null, 2));
@@ -79,7 +72,7 @@ app.post("/api/registro", (req, res) => {
   }
 });
 
-// Devuelve la lista de usuarios
+// ================= Listar usuarios =================
 app.get("/api/usuarios", (req, res) => {
   try {
     let usuarios = [];
@@ -93,20 +86,21 @@ app.get("/api/usuarios", (req, res) => {
     res.status(500).json({ mensaje: "Error interno al leer usuarios" });
   }
 });
-// Maneja el inicio de sesión de usuarios (autenticación)
-app.post("/api/login", (req, res) => {
 
+// ================= Login =================
+app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  console.log("entra")
   let usuarios = [];
   try {
     if (fs.existsSync(FILE_PATH)) {
       const data = fs.readFileSync(FILE_PATH, "utf-8");
       usuarios = JSON.parse(data);
     }
+
     const user = usuarios.find(
       (u) => u.username === username && u.password === password
     );
+
     if (user) {
       res.json({ mensaje: "Inicio de sesión exitoso", user });
     } else {
@@ -115,6 +109,40 @@ app.post("/api/login", (req, res) => {
   } catch (err) {
     console.error("Error manejando login:", err);
     res.status(500).json({ mensaje: "Error interno al iniciar sesión" });
+  }
+});
+
+// ================= Endpoints adicionales =================
+
+// Obtener cuentas de un usuario
+app.get("/api/usuarios/:username/cuentas", (req, res) => {
+  const { username } = req.params;
+  try {
+    if (!fs.existsSync(FILE_PATH)) return res.status(404).json([]);
+    const usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
+    const user = usuarios.find((u) => u.username === username);
+    if (!user)
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    res.json(user.cuentas || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
+});
+
+// Obtener tarjetas de un usuario
+app.get("/api/usuarios/:username/tarjetas", (req, res) => {
+  const { username } = req.params;
+  try {
+    if (!fs.existsSync(FILE_PATH)) return res.status(404).json([]);
+    const usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
+    const user = usuarios.find((u) => u.username === username);
+    if (!user)
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    res.json(user.tarjetas || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error interno" });
   }
 });
 
