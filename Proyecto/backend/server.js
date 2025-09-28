@@ -95,7 +95,9 @@ app.get("/api/usuarios", (req, res) => {
 });
 // Maneja el inicio de sesión de usuarios (autenticación)
 app.post("/api/login", (req, res) => {
+
   const { username, password } = req.body;
+  console.log("entra")
   let usuarios = [];
   try {
     if (fs.existsSync(FILE_PATH)) {
