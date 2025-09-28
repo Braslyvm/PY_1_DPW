@@ -15,16 +15,25 @@ const DETALLES_CUENTAS_PATH = path.join(__dirname, "detallesCuenta.json");
 const app = express();
 
 // ====== Configuración CORS ======
-app.use(
-  cors({
-    origin: ["https://banconsfms.netlify.app", "http://localhost:5173"], // frontend en producción + pruebas locales
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
+const allowedOrigins = [
+  "https://banconsfms.netlify.app",
+  "http://localhost:5173"
+];
 
-// Responder manualmente a OPTIONS (preflight)
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+}));
+
+// Responder OPTIONS para preflight
 app.options("*", cors());
 
 app.use(express.json());
@@ -36,8 +45,7 @@ app.post("/api/registro", (req, res) => {
 
   try {
     if (fs.existsSync(FILE_PATH)) {
-      const data = fs.readFileSync(FILE_PATH, "utf-8");
-      usuarios = JSON.parse(data);
+      usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
     }
 
     const usernameNorm = (usuario.username || "").toString().trim().toLowerCase();
@@ -118,7 +126,7 @@ app.post("/api/login", (req, res) => {
   }
 });
 
-// ================= Obtener cuentas de un usuario =================
+// ================= Obtener cuentas y tarjetas de un usuario =================
 app.get("/api/usuarios/:username/cuentas", (req, res) => {
   const { username } = req.params;
   try {
@@ -133,7 +141,6 @@ app.get("/api/usuarios/:username/cuentas", (req, res) => {
   }
 });
 
-// ================= Obtener tarjetas de un usuario =================
 app.get("/api/usuarios/:username/tarjetas", (req, res) => {
   const { username } = req.params;
   try {
@@ -160,8 +167,6 @@ app.get("/api/cuentas/:accountId", (req, res) => {
     }
 
     const detalles = JSON.parse(fs.readFileSync(DETALLES_CUENTAS_PATH, "utf-8"));
-    console.log("Archivo leído, número de cuentas:", detalles.length);
-
     const cuenta = detalles.find((c) => c.account_id === accountId);
 
     if (!cuenta) {
@@ -175,6 +180,11 @@ app.get("/api/cuentas/:accountId", (req, res) => {
     console.error("Error leyendo detalles de cuentas:", err);
     res.status(500).json({ mensaje: "Error interno" });
   }
+});
+
+// ================= Middleware 404 =================
+app.use((req, res) => {
+  res.status(404).json({ mensaje: "Ruta no encontrada" });
 });
 
 // ================= Servidor =================
