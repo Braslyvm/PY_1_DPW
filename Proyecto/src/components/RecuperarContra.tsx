@@ -1,5 +1,9 @@
 import React, { useState, type FC } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -40,26 +44,32 @@ const RecuperarContra: FC = () => {
   const handleEnviarToken = (e: React.FormEvent) => {
     e.preventDefault();
     if (!valorValidacion) return alert("Ingrese correo o usuario.");
-    setTokenGenerado("0000");
-    alert(`Token enviado al usuario: ${"0000"}`);
-    setFase("cambiarPassword");
-    setLoading(false);
+    setTokenGenerado("0000"); // simula envío de token
+    alert(`Token enviado al usuario: 0000`);
+  };
+
+  const handleValidarToken = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (tokenIngresado === tokenGenerado) {
+      setFase("cambiarPassword"); // abrir sección de cambio de contraseña
+    } else {
+      alert("Token incorrecto, intente de nuevo.");
+    }
   };
 
   const handleCambiarPassword = (e: React.FormEvent) => {
     e.preventDefault();
-    if (tokenIngresado !== tokenGenerado)
-      return alert("Token incorrecto, intente de nuevo.");
-
     if (!validate()) return;
-
-    alert("Contraseña cambiada exitosamente.");
+    toast.success("Contraseña cambiada con éxito!");
+    //Swal.fire("¡Hecho!", "Contraseña cambiada con éxito", "success");
     navigate("/login");
   };
 
   return (
     <main className="login-container">
-      <h1>Recuperar Contraseña</h1>
+      <header>
+        <h1>Recuperar Contraseña</h1>
+      </header>
 
       {fase === "validacion" && (
         <section aria-label="Validación de usuario">
@@ -98,20 +108,25 @@ const RecuperarContra: FC = () => {
               {loading ? "Enviando..." : "Enviar Token"}
             </button>
           </form>
+
+          {tokenGenerado && (
+            <form onSubmit={handleValidarToken}>
+              <label>Ingrese token recibido:</label>
+              <input
+                type="text"
+                value={tokenIngresado}
+                onChange={(e) => setTokenIngresado(e.target.value)}
+                required
+              />
+              <button type="submit">Validar Token</button>
+            </form>
+          )}
         </section>
       )}
 
       {fase === "cambiarPassword" && (
         <section aria-label="Cambio de contraseña">
-          <form onSubmit={handleCambiarPassword} id="registroForm">
-            <label>Ingrese token recibido:</label>
-            <input
-              type="text"
-              value={tokenIngresado}
-              onChange={(e) => setTokenIngresado(e.target.value)}
-              required
-            />
-
+          <form onSubmit={handleCambiarPassword}>
             <input
               name="password"
               value={form.password}
