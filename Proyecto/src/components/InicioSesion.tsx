@@ -11,7 +11,7 @@ const InicioSesion: React.FC = () => {
       const username = document.getElementById("username") as HTMLInputElement;
       const password = document.getElementById("password") as HTMLInputElement;
 
-      fetch("https://py_1_dpw.up.railway.app/api/login", {
+      fetch("https://py1dpw-production.up.railway.app/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
