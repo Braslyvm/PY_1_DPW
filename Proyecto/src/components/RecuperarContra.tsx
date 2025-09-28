@@ -6,7 +6,7 @@ import "../style/barraProgreso.css";
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
-const RecuperarContra: FC = () => {
+const RecuperarContra: React.FC = () => {
   const navigate = useNavigate();
   const MySwal = withReactContent(Swal);
 
@@ -78,38 +78,14 @@ const RecuperarContra: FC = () => {
 
   return (
     <main className="login-container">
-      <header>
-        <h1>Recuperar Contraseña</h1>
-        <button type="button" onClick={() => navigate("/login")}>
-          Cancelar
-        </button>
+      <header className="encabezado-recuperacion">
+        <h1 className="titulo-recuperacion">Recuperar Contraseña</h1>
         <div className="progress-container">
-          {[
-            "Identificación",
-            "Verificación",
-            "Nueva Contraseña",
-            "Confirmación",
-          ].map((step, index) => {
-            const faseIndex = [
-              "identificacion",
-              "verificacion",
-              "nuevaPassword",
-              "confirmacion",
-            ].indexOf(fase);
+          {["Identificación", "Verificación", "Nueva Contraseña", "Confirmación"].map((step, index) => {
+            const faseIndex = ["identificacion", "verificacion", "nuevaPassword", "confirmacion"].indexOf(fase);
             return (
-              <div
-                key={step}
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                }}
-              >
-                <div
-                  className={`step-circle ${
-                    index <= faseIndex ? "active" : ""
-                  }`}
-                >
+              <div key={step} className="step-item">
+                <div className={`step-circle ${index <= faseIndex ? "active" : ""}`}>
                   {index + 1}
                 </div>
                 <div className="step-label">{step}</div>
@@ -124,33 +100,36 @@ const RecuperarContra: FC = () => {
         <section aria-label="Identificación">
           <form onSubmit={handleEnviarToken}>
             <label htmlFor="tipo">Validar por:</label>
-            <select
-              value={tipo}
-              onChange={(e) => setTipo(e.target.value)}
-              required
-            >
+            <select value={tipo} onChange={(e) => setTipo(e.target.value)} required>
               <option value="">Seleccione</option>
               <option value="email">Correo Electrónico</option>
               <option value="username">Nombre de Usuario</option>
             </select>
 
             {tipo === "email" && (
-              <input
-                type="email"
-                placeholder="Correo Electrónico"
-                value={valorValidacion}
-                onChange={(e) => setValorValidacion(e.target.value)}
-                required
-              />
+              <div className="input-wrapper">
+                <i className="fas fa-envelope"></i>
+                <input
+                  type="email"
+                  placeholder="Correo Electrónico"
+                  value={valorValidacion}
+                  onChange={(e) => setValorValidacion(e.target.value)}
+                  required
+                />
+              </div>
             )}
+
             {tipo === "username" && (
-              <input
-                type="text"
-                placeholder="Usuario"
-                value={valorValidacion}
-                onChange={(e) => setValorValidacion(e.target.value)}
-                required
-              />
+              <div className="input-wrapper">
+                <i className="fas fa-user"></i>
+                <input
+                  type="text"
+                  placeholder="Usuario"
+                  value={valorValidacion}
+                  onChange={(e) => setValorValidacion(e.target.value)}
+                  required
+                />
+              </div>
             )}
 
             <button type="submit" disabled={loading}>
@@ -164,54 +143,63 @@ const RecuperarContra: FC = () => {
       {fase === "verificacion" && (
         <section aria-label="Verificación">
           <form onSubmit={handleValidarToken}>
-            <label>Ingrese token recibido:</label>
-            <input
-              type="text"
-              value={tokenIngresado}
-              onChange={(e) => setTokenIngresado(e.target.value)}
-              required
-            />
+            <div className="input-wrapper">
+              <i className="fas fa-key"></i>
+              <input
+                type="text"
+                placeholder="Ingrese token recibido"
+                value={tokenIngresado}
+                onChange={(e) => setTokenIngresado(e.target.value)}
+                required
+              />
+            </div>
             <button type="submit">Validar Token</button>
-          </form>
 
-          <button
-            type="button"
-            onClick={() => {
-              setTokenGenerado("0000"); // simula el reenvío HAY QUE CAMBIARLO LUEGO
-              alert("Código reenviado al usuario: 0000");
-            }}
-          >
-            Reenviar Código
-          </button>
+            <button
+              type="submit"
+              className="link-btn"
+              onClick={() => {
+                setTokenGenerado("0000");
+                alert("Código reenviado al usuario: 0000");
+              }}
+            >
+              Reenviar Código
+            </button>
+          </form>
         </section>
       )}
 
+      {/* Paso 3: Nueva Contraseña */}
       {fase === "nuevaPassword" && (
         <section aria-label="Nueva Contraseña">
           <form onSubmit={handleCambiarPassword}>
-            <input
-              name="password"
-              value={form.password}
-              onChange={handleChange}
-              type="password"
-              placeholder="Nueva Contraseña"
-              required
-            />
-            <p style={{ fontSize: "0.8rem", color: "gray" }}>
-              Debe tener mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1
-              dígito.
+            <p className="hint">
+              Debe tener mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1 dígito.
             </p>
-            {errors.password && <p>{errors.password}</p>}
+            <div className="input-wrapper">
+              <i className="fas fa-lock"></i>
+              <input
+                name="password"
+                value={form.password}
+                onChange={handleChange}
+                type="password"
+                placeholder="Nueva Contraseña"
+                required
+              />
+            </div>
+            <div className="input-wrapper">
+              <i className="fas fa-lock"></i>
+              <input
+                name="confirmarPassword"
+                value={form.confirmarPassword}
+                onChange={handleChange}
+                type="password"
+                placeholder="Confirmar Contraseña"
+                required
+              />
+            </div>
+            {errors.confirmarPassword && <p className="error">{errors.confirmarPassword}</p>}
 
-            <input
-              name="confirmarPassword"
-              value={form.confirmarPassword}
-              onChange={handleChange}
-              type="password"
-              placeholder="Confirmar Contraseña"
-              required
-            />
-            {errors.confirmarPassword && <p>{errors.confirmarPassword}</p>}
             <nav>
               <button type="submit">Cambiar Contraseña</button>
             </nav>
@@ -219,14 +207,22 @@ const RecuperarContra: FC = () => {
         </section>
       )}
 
+      {/* Paso 4: Confirmación */}
       {fase === "confirmacion" && (
-        <section aria-label="Confirmación">
-          <h2>Contraseña cambiada exitosamente</h2>
+        <section aria-label="Confirmación" className="success">
+          <h2>✅ Contraseña cambiada exitosamente</h2>
           <button onClick={() => navigate("/login")}>Ir a Login</button>
         </section>
       )}
+
+        <nav>
+          <button type="button" onClick={() => navigate("/login")}>
+            Volver al login: <strong>volver</strong>
+          </button>
+        </nav>
     </main>
   );
+
 };
 
 export default RecuperarContra;

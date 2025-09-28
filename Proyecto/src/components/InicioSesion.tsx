@@ -107,11 +107,7 @@ const InicioSesion: React.FC = () => {
             </button>
           </div>
         </div>
-
-        {/* Botón iniciar sesión */}
-        <div>
-          <button type="submit">Iniciar Sesión</button>
-        </div>
+        <button type="submit">Iniciar Sesión</button>
 
         {/* Navegación */}
         <nav>

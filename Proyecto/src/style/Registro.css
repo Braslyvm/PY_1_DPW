@@ -1,0 +1,110 @@
+/* Select dentro del input-wrapper */
+.input-wrapper select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  background-color: #f9fafb;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  padding: 0.75rem 2.5rem 0.75rem 0.75rem;
+  font-size: 1rem;
+  color: var(--text-dark);
+}
+
+.input-wrapper select:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(65, 90, 119, 0.3);
+}
+
+/* Checkbox con label */
+.form-group div {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.form-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.login-container p {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 0.25rem;
+}
+
+
+.modal-terminos {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-terminos div {
+  background: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+}
+
+.checkbox-group {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.checkbox-group input[type="checkbox"] {
+  width: auto;
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkbox-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.terms-button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  cursor: pointer;
+  font-weight: 600;
+  text-decoration: underline;
+  padding: 0;
+  font-size: 0.9rem;
+}
+
+.terms-button:hover {
+  color: var(--sider);
+}
+
+
+/* Contenedor del checkbox + botón términos */
+.checkbox-group {
+  margin-bottom: -3rem; /* menos espacio debajo */
+}
+
+/* Nav de botones dentro del formulario */
+form nav {
+  margin-top: 0rem;
+  margin-bottom: 0.25rem;
+  gap: -2rem; /* si son varios botones dentro de un nav */
+}
