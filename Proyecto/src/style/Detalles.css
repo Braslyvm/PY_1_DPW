@@ -1,24 +1,14 @@
-/* Contenedor principal */
-.contenedor_main {
-  max-width: 1200px;
-  margin: 20px auto;
-  padding: 20px;
-  background-color: #f9f9f9;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
-  overflow: hidden;
-}
 
-/* Header sticky (reutilizable con ID) */
+
+/* Header sticky */
 #cuenta-header {
+  background-color: #f06c00;
+
   position: sticky;
   top: 0;
   background-color: #ffffff;
   padding: 10px 0;
-  border-bottom: 2px solid #4caf50;
+  border-bottom: 2px solid #f06c00;
   z-index: 10;
   text-align: center;
 }
@@ -29,11 +19,12 @@
   color: #333;
 }
 
-/* Contenedor de scroll para la tabla (reutilizable con ID) */
+/* Contenedor de scroll para la tabla */
 #cuenta-main {
-  overflow-x: auto;
-  overflow-y: auto;
-  max-height: 500px; /* limita el alto para scroll vertical */
+  overflow-x: auto; /* scroll horizontal */
+  overflow-y: auto; /* scroll vertical */
+  max-height: calc(100vh - 200px); /* se adapta a la pantalla */
+  display: block;
 }
 
 /* Tabla */
@@ -44,10 +35,10 @@
 }
 
 #cuenta-main thead {
+  position: sticky;
+  top: 0;
   background-color: #4caf50;
   color: white;
-  position: sticky;
-  top: 50px; /* ajusta según altura del header */
   z-index: 5;
 }
 
