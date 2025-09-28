@@ -40,5 +40,4 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
     </CNavbar>
   )
 }
-
 export default Header

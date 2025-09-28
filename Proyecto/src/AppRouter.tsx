@@ -8,6 +8,8 @@ import {
 import InicioSesion from "./components/InicioSesion";
 import Registro from "./components/Registro";
 import Dashboard from "./components/Dashboard";
+import Recuperar from "./components/RecuperarContra";
+
 
 
 const Profile = () => (
@@ -26,6 +28,7 @@ const AppRouter: React.FC = () => {
         <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/register" element={<Registro />} />
+        <Route path="/recuperar-contra" element={<Recuperar />} />
       </Routes>
     </Router>
   );
