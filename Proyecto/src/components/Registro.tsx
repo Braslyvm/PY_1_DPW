@@ -32,11 +32,13 @@ const Registro: FC = () => {
   const [showTerminos, setShowTerminos] = useState(false);
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const { name, value, type, checked } = e.target;
-    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
-  };
+  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+) => {
+  const target = e.target as HTMLInputElement; // casteo a HTMLInputElement
+  const { name, value, type, checked } = target;
+  setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+};
+
   interface UsuarioType {
     nombreCompleto?: string;
     username?: string;

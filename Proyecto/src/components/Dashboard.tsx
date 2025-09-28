@@ -1,13 +1,15 @@
 import React, { useState } from "react";
 import Header from "./Header";
-import MainContent from "./Maincontent";
 import HelloWorld from "./algo";
-import VerCuentas from "./VerCuentas";
 import DetallesCuenta from "./DetallesCuenta";
+
 import DetalleTarjeta from "./DetalleTarjeta";
 import VerTarjetas from "./VerTarjetas";
 import RegistroDeCuenta from "./registroDecuenta";
-import ConsultarPIN from "./RecuperarPin"
+import ConsultarPIN from "./RecuperarPin";
+
+import MainContent from "./MainContent";
+import VerCuentas from "./verCuentas";
 
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("home");
