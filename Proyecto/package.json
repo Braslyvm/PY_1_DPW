@@ -3,16 +3,14 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
- "scripts": {
-  "dev": "concurrently \"npm run dev-frontend\" \"npm run dev-backend\"",
-  "dev-frontend": "vite",
-  "dev-backend": "node backend/server.js",
-  "start": "vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview"
-}
-,
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "backend": "node src/backend/server.js",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview"
+  },
   "dependencies": {
     "@coreui/coreui": "^5.4.3",
     "@coreui/react": "^5.9.0",
