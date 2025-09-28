@@ -1,0 +1,18 @@
+body {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  background-color: var(--background);
+  overflow-y: auto; 
+}
+
+:root {
+  --background: #fcfcfc;  
+  --background1: #0d1b2a; 
+  --sider: #1b263b;      
+  --accent: #415a77;    
+  --block-bg: #778da9;   
+  --light-bg: #e0e1dd;    
+  --text-dark: #0d1b2a;  
+  --text-light: #e0e1dd;   
+}

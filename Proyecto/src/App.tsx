@@ -1,5 +1,6 @@
-import './App.css'
 import AppRouter from './AppRouter'
+import '../src/style/InicioSesion.css'
+import '../src/style/base.css'
 
 function App() {
   return (

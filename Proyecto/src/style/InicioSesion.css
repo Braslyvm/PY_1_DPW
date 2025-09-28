@@ -1,0 +1,147 @@
+/* Contenedor principal */
+.login-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  background-color: var(--background);
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  color: var(--text-dark);
+}
+
+/* Título */
+.login-container h1 {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+/* Subtítulo */
+.login-container p {
+  font-size: 0.95rem;
+  color: #6c757d;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+/* Formulario */
+.login-container form {
+  background-color: #fff;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  width: 100%;
+  max-width: 400px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+/* Grupo de campos */
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-dark);
+}
+
+
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+/* Input */
+.input-wrapper input {
+  width: 100%;
+  padding: 0.75rem 2.5rem 0.75rem 2.5rem; 
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  background-color: #f9fafb;
+  font-size: 1rem;
+  color: var(--text-dark);
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+}
+
+.input-wrapper input:focus {
+  outline: none;
+  border-color: var(--accent);
+  background-color: #fff;
+  box-shadow: 0 0 5px rgba(65, 90, 119, 0.3);
+}
+
+.input-wrapper i {
+  position: absolute;
+  left: 0.9rem;
+  font-size: 1rem;
+  color: #9ca3af;
+}
+
+.toggle-password {
+  position: absolute;
+  top: 35%;             
+  right: 2rem;      
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  color: #6c757d;
+}
+
+
+.login-container button[type="submit"] {
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-light);
+  background: linear-gradient(90deg, var(--accent), var(--sider));
+  border: none;
+  border-radius: 0.6rem;
+  cursor: pointer;
+  transition: background 0.3s ease;
+}
+
+.login-container button[type="submit"]:hover {
+  background: linear-gradient(90deg, var(--sider), var(--accent));
+}
+
+
+.login-container nav {
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.login-container nav button {
+  background: none;
+  border: none;
+  color: var(--accent);
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  text-decoration: underline;
+}
+
+
+.login-container > button {
+  margin-top: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 0.9rem;
+  color: var(--sider);
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.login-container > button:hover {
+  color: var(--accent);
+}
