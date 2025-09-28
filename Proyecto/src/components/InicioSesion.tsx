@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate,  } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 const InicioSesion: React.FC = () => {
   const navigate = useNavigate();
 
-  
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -14,7 +13,10 @@ const InicioSesion: React.FC = () => {
       fetch("http://localhost:4000/api/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: username.value, password: password.value }),
+        body: JSON.stringify({
+          username: username.value,
+          password: password.value,
+        }),
       })
         .then((response) => {
           if (!response.ok) throw new Error("Error en la autenticación");
@@ -28,10 +30,9 @@ const InicioSesion: React.FC = () => {
           console.error("Error durante el inicio de sesión:", error);
         });
     } catch (error) {
-      console.error("Error durante login:", error);
+      console.error("Error durante Login:", error);
     }
-
-  };  
+  };
   const mostrarcontraseña = () => {
     const passwordInput = document.getElementById(
       "password"
@@ -43,7 +44,7 @@ const InicioSesion: React.FC = () => {
   };
 
   return (
-    <div className="login-container" >
+    <div className="login-container">
       <h1>Inicio de Sesión</h1>
       <form onSubmit={handleSubmit}>
         <div>
