@@ -80,7 +80,9 @@ const RecuperarContra: FC = () => {
     <main className="login-container">
       <header>
         <h1>Recuperar Contraseña</h1>
-
+        <button type="button" onClick={() => navigate("/login")}>
+          Cancelar
+        </button>
         <div className="progress-container">
           {[
             "Identificación",
@@ -184,7 +186,6 @@ const RecuperarContra: FC = () => {
         </section>
       )}
 
-
       {fase === "nuevaPassword" && (
         <section aria-label="Nueva Contraseña">
           <form onSubmit={handleCambiarPassword}>
@@ -211,12 +212,12 @@ const RecuperarContra: FC = () => {
               required
             />
             {errors.confirmarPassword && <p>{errors.confirmarPassword}</p>}
-
-            <button type="submit">Cambiar Contraseña</button>
+            <nav>
+              <button type="submit">Cambiar Contraseña</button>
+            </nav>
           </form>
         </section>
       )}
-
 
       {fase === "confirmacion" && (
         <section aria-label="Confirmación">
