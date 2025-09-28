@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import "../style/barraProgreso.css";
 
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
@@ -80,14 +81,13 @@ const RecuperarContra: FC = () => {
       <header>
         <h1>Recuperar Contraseña</h1>
 
-        <div className="progress-steps">
+        <div className="progress-container">
           {[
             "Identificación",
             "Verificación",
             "Nueva Contraseña",
             "Confirmación",
           ].map((step, index) => {
-            const stepIndex = index;
             const faseIndex = [
               "identificacion",
               "verificacion",
@@ -97,9 +97,20 @@ const RecuperarContra: FC = () => {
             return (
               <div
                 key={step}
-                className={`step ${stepIndex <= faseIndex ? "active" : ""}`}
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                }}
               >
-                {step}
+                <div
+                  className={`step-circle ${
+                    index <= faseIndex ? "active" : ""
+                  }`}
+                >
+                  {index + 1}
+                </div>
+                <div className="step-label">{step}</div>
               </div>
             );
           })}
@@ -160,10 +171,20 @@ const RecuperarContra: FC = () => {
             />
             <button type="submit">Validar Token</button>
           </form>
+
+          <button
+            type="button"
+            onClick={() => {
+              setTokenGenerado("0000"); // simula el reenvío HAY QUE CAMBIARLO LUEGO
+              alert("Código reenviado al usuario: 0000");
+            }}
+          >
+            Reenviar Código
+          </button>
         </section>
       )}
 
-      {/* Paso 3: Nueva contraseña */}
+
       {fase === "nuevaPassword" && (
         <section aria-label="Nueva Contraseña">
           <form onSubmit={handleCambiarPassword}>
@@ -175,6 +196,10 @@ const RecuperarContra: FC = () => {
               placeholder="Nueva Contraseña"
               required
             />
+            <p style={{ fontSize: "0.8rem", color: "gray" }}>
+              Debe tener mínimo 8 caracteres, 1 mayúscula, 1 minúscula y 1
+              dígito.
+            </p>
             {errors.password && <p>{errors.password}</p>}
 
             <input
@@ -192,7 +217,7 @@ const RecuperarContra: FC = () => {
         </section>
       )}
 
-      {/* Paso 4: Confirmación */}
+
       {fase === "confirmacion" && (
         <section aria-label="Confirmación">
           <h2>Contraseña cambiada exitosamente</h2>
