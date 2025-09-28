@@ -7,15 +7,8 @@ import {
 } from "react-router-dom";
 import InicioSesion from "./components/InicioSesion";
 import Registro from "./components/Registro";
+import Dashboard from "./components/Dashboard";
 
-// Componentes temporales - puedes crear archivos separados después
-const Dashboard = () => (
-  <div>
-    <h1>Dashboard</h1>
-    <p>Bienvenido al dashboard!</p>
-    <nav></nav>
-  </div>
-);
 
 const Profile = () => (
   <div>
@@ -30,7 +23,7 @@ const AppRouter: React.FC = () => {
       <Routes>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<InicioSesion />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/dashboard/*" element={<Dashboard />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/register" element={<Registro />} />
       </Routes>
