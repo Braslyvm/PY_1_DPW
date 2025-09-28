@@ -1,31 +1,34 @@
-import React from "react";
-import type { FC } from "react";
-import { useNavigate } from "react-router-dom";
-const RegistroDeCuenta: FC = () => {
-  const navigate = useNavigate();
+import React, { FC } from "react";
 
+interface RegistroDeCuentaProps {
+  setActiveTab: (tab: string) => void;
+}
+
+const RegistroDeCuenta: FC<RegistroDeCuentaProps> = ({ setActiveTab }) => {
+  // Función para manejar el envío del formulario
   const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+
     if (validateForm()) {
       alert("Cuenta registrada exitosamente.");
-      navigate("/dashboard");
+      // Volver a la lista de cuentas después de registrar
+      setActiveTab("cuentas");
     }
-
   };
-  const validateForm = () => {
-    
 
+  // Función para validar el formulario
+  const validateForm = () => {
+    // Aquí puedes agregar validaciones personalizadas
     return true;
-    
   };
 
   return (
-    <section>
+    <section style={{ padding: "20px" }}>
       <header>
         <h2>Registro de Cuenta</h2>
       </header>
       <main>
-        <form>
+        <form onSubmit={handleSubmit}>
           <div>
             <label htmlFor="account_id">Identificador (IBAN):</label>
             <input
@@ -86,13 +89,19 @@ const RegistroDeCuenta: FC = () => {
               placeholder="customer_id del usuario"
             />
           </div>
-          <button type="submit">Registrar Cuenta</button>
-          <button type="button" onClick={() => navigate("/dashboard")}>
-            Cancelar
-          </button>
+          <div style={{ marginTop: "15px" }}>
+            <button type="submit" style={{ marginRight: "10px" }}>
+              Registrar Cuenta
+            </button>
+            {/* Botón Cancelar que cierra el formulario */}
+            <button type="button" onClick={() => setActiveTab("cuentas")}>
+              Cancelar
+            </button>
+          </div>
         </form>
       </main>
     </section>
   );
 };
+
 export default RegistroDeCuenta;

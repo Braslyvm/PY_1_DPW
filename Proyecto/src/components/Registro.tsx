@@ -170,174 +170,165 @@ const Registro: FC = () => {
   // helper types declared above; no Cliente class needed here
 
   return (
-  <div className="login-container">
-    <h1>Registro de Usuario</h1>
-    <form onSubmit={handleSubmit}>
-      <input
-        className="input-wrapper"
-        name="nombreCompleto"
-        value={form.nombreCompleto}
-        onChange={handleChange}
-        type="text"
-        placeholder="Nombre completo"
-        required
-      />
-      {errors.nombreCompleto && <p>{errors.nombreCompleto}</p>}
+    <div className="login-container">
+      <h1>Registro de Usuario</h1>
+      <form onSubmit={handleSubmit}>
+        <input
+          className="input-wrapper"
+          name="nombreCompleto"
+          value={form.nombreCompleto}
+          onChange={handleChange}
+          type="text"
+          placeholder="Nombre completo"
+          required
+        />
+        {errors.nombreCompleto && <p>{errors.nombreCompleto}</p>}
 
-      <input
-        className="input-wrapper"
-        name="username"
-        value={form.username}
-        onChange={handleChange}
-        onBlur={() => {
-          if (form.username && usernameRegex.test(form.username)) {
-            validarExistenciaUsuario(form.username);
-          }
-        }}
-        type="text"
-        placeholder="Username"
-        required
-      />
-      {errors.username && <p>{errors.username}</p>}
+        <input
+          className="input-wrapper"
+          name="username"
+          value={form.username}
+          onChange={handleChange}
+          onBlur={() => {
+            if (form.username && usernameRegex.test(form.username)) {
+              validarExistenciaUsuario(form.username);
+            }
+          }}
+          type="text"
+          placeholder="Username"
+          required
+        />
+        {errors.username && <p>{errors.username}</p>}
 
-      <select
-        className="input-wrapper"
-        name="tipoDocumento"
-        value={form.tipoDocumento}
-        onChange={handleChange}
-        required
-      >
-        <option value="">Seleccione tipo de documento</option>
-        <option value="Nacional">Nacional</option>
-        <option value="DIMEX">DIMEX</option>
-        <option value="Pasaporte">Pasaporte</option>
-      </select>
-      {errors.tipoDocumento && <p>{errors.tipoDocumento}</p>}
-
-      <input
-        className="input-wrapper"
-        name="numeroDocumento"
-        value={form.numeroDocumento}
-        onChange={handleChange}
-        type="text"
-        placeholder="Número de documento"
-        required
-      />
-      {errors.numeroDocumento && <p>{errors.numeroDocumento}</p>}
-
-      <input
-        className="input-wrapper"
-        name="fechaNacimiento"
-        value={form.fechaNacimiento}
-        onChange={handleChange}
-        type="date"
-        required
-      />
-      {errors.fechaNacimiento && <p>{errors.fechaNacimiento}</p>}
-
-      <input
-        className="input-wrapper"
-        name="correo"
-        value={form.correo}
-        onChange={handleChange}
-        type="email"
-        placeholder="Correo Electrónico"
-        required
-      />
-      {errors.correo && <p>{errors.correo}</p>}
-
-      <input
-        className="input-wrapper"
-        name="telefono"
-        value={form.telefono}
-        onChange={handleChange}
-        type="text"
-        placeholder="Teléfono (+506 ####-####)"
-      />
-      {errors.telefono && <p>{errors.telefono}</p>}
-
-      <input
-        className="input-wrapper"
-        name="password"
-        value={form.password}
-        onChange={handleChange}
-        type="password"
-        placeholder="Contraseña"
-        required
-      />
-      {errors.password && <p>{errors.password}</p>}
-
-      <input
-        className="input-wrapper"
-        name="confirmarPassword"
-        value={form.confirmarPassword}
-        onChange={handleChange}
-        type="password"
-        placeholder="Confirmar contraseña"
-        required
-      />
-      {errors.confirmarPassword && <p>{errors.confirmarPassword}</p>}
-
-      <div className="form-group checkbox-group">
-        <div className="checkbox-row">
-          <input
-            type="checkbox"
-            id="terminos"
-            name="aceptarTerminos"
-            checked={form.aceptarTerminos}
-            onChange={handleChange}
-          />
-          <nav className="checkbox-nav">
-            <button
-              type="button"
-              onClick={() => navigate("/register")}
-            >
-              Acepto los <strong>Términos y Condiciones</strong>
-            </button>
-          </nav>
-        </div>
-        {errors.aceptarTerminos && <p className="error-text">{errors.aceptarTerminos}</p>}
-      </div>
-
-      <nav>
-        <button
-          className="login-container-button"
-          type="submit"
-          disabled={loading || !form.aceptarTerminos}
+        <select
+          className="input-wrapper"
+          name="tipoDocumento"
+          value={form.tipoDocumento}
+          onChange={handleChange}
+          required
         >
-          {loading ? "Registrando..." : "Registrar"}
+          <option value="">Seleccione tipo de documento</option>
+          <option value="Nacional">Nacional</option>
+          <option value="DIMEX">DIMEX</option>
+          <option value="Pasaporte">Pasaporte</option>
+        </select>
+        {errors.tipoDocumento && <p>{errors.tipoDocumento}</p>}
+
+        <input
+          className="input-wrapper"
+          name="numeroDocumento"
+          value={form.numeroDocumento}
+          onChange={handleChange}
+          type="text"
+          placeholder="Número de documento"
+          required
+        />
+        {errors.numeroDocumento && <p>{errors.numeroDocumento}</p>}
+
+        <input
+          className="input-wrapper"
+          name="fechaNacimiento"
+          value={form.fechaNacimiento}
+          onChange={handleChange}
+          type="date"
+          required
+        />
+        {errors.fechaNacimiento && <p>{errors.fechaNacimiento}</p>}
+
+        <input
+          className="input-wrapper"
+          name="correo"
+          value={form.correo}
+          onChange={handleChange}
+          type="email"
+          placeholder="Correo Electrónico"
+          required
+        />
+        {errors.correo && <p>{errors.correo}</p>}
+
+        <input
+          className="input-wrapper"
+          name="telefono"
+          value={form.telefono}
+          onChange={handleChange}
+          type="text"
+          placeholder="Teléfono (+506 ####-####)"
+        />
+        {errors.telefono && <p>{errors.telefono}</p>}
+
+        <input
+          className="input-wrapper"
+          name="password"
+          value={form.password}
+          onChange={handleChange}
+          type="password"
+          placeholder="Contraseña"
+          required
+        />
+        {errors.password && <p>{errors.password}</p>}
+
+        <input
+          className="input-wrapper"
+          name="confirmarPassword"
+          value={form.confirmarPassword}
+          onChange={handleChange}
+          type="password"
+          placeholder="Confirmar contraseña"
+          required
+        />
+        {errors.confirmarPassword && <p>{errors.confirmarPassword}</p>}
+
+        <div className="form-group checkbox-group">
+          <div className="checkbox-row">
+            <input
+              type="checkbox"
+              id="terminos"
+              name="aceptarTerminos"
+              checked={form.aceptarTerminos}
+              onChange={handleChange}
+            />
+            <nav className="checkbox-nav">
+              <button type="button" onClick={() => setShowTerminos(true)}>
+                Acepto los <strong>Términos y Condiciones</strong>
+              </button>
+            </nav>
+          </div>
+          {errors.aceptarTerminos && (
+            <p className="error-text">{errors.aceptarTerminos}</p>
+          )}
+        </div>
+
+        <nav>
+          <button
+            className="login-container-button"
+            type="submit"
+            disabled={loading || !form.aceptarTerminos}
+          >
+            {loading ? "Registrando..." : "Registrar"}
+          </button>
+        </nav>
+      </form>
+      {showTerminos && (
+        <div className="modal-terminos">
+          <div>
+            <h2>Términos y Condiciones</h2>
+            <iframe
+              src="/Condiciones.pdf"
+              width="100%"
+              height="600px"
+              title="Términos y Condiciones"
+            />
+            <button onClick={() => setShowTerminos(false)}>Cerrar</button>
+          </div>
+        </div>
+      )}
+      <nav>
+        <button type="button" onClick={() => navigate("/login")}>
+          Volver al login
         </button>
       </nav>
-      
-       
-    </form>
-    {showTerminos && (
-      <div className="modal-terminos">
-        <div>
-          <h2>Términos y Condiciones</h2>
-          <embed
-            src="/terminos.pdf"
-            type="application/pdf"
-            width="100%"
-            height="400px"
-          />
-          
-        </div>
-      </div>
-    )}
-    <nav>
-          <button
-            type="button"
-            onClick={() => navigate("/login")}
-          >
-            Volver al login 
-          </button>
-
-        </nav>
-    
-  </div>
-);
-
+    </div>
+  );
 };
 
 export default Registro;

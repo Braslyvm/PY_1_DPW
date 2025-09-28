@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  CButton,
   CCollapse,
   CContainer,
   CNavbar,
@@ -9,6 +8,10 @@ import {
   CNavbarNav,
   CNavItem,
   CNavLink,
+  CDropdown,
+  CDropdownToggle,
+  CDropdownMenu,
+  CDropdownItem,
 } from "@coreui/react";
 
 interface HeaderProps {
@@ -29,6 +32,7 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
         />
         <CCollapse className="navbar-collapse" visible={visible}>
           <CNavbarNav className="me-auto">
+            {/* Sección Hola Mundo */}
             <CNavItem>
               <CNavLink
                 onClick={() => setActiveTab("hello")}
@@ -37,18 +41,36 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
                 Hola Mundo
               </CNavLink>
             </CNavItem>
+
+            {/* Sección Tarjetas */}
             <CNavItem>
               <CNavLink
-                onClick={() => setActiveTab("cuentas")}
+                onClick={() => setActiveTab("tarjetas")}
                 style={{ cursor: "pointer" }}
               >
-                Cuentas
+                Tarjetas
               </CNavLink>
             </CNavItem>
+
+            {/* Dropdown de Cuentas */}
+            <CDropdown variant="nav-item" popper={false}>
+              <CDropdownToggle style={{ cursor: "pointer" }}>
+                Cuentas
+              </CDropdownToggle>
+              <CDropdownMenu>
+                <CDropdownItem onClick={() => setActiveTab("cuentas")}>
+                  Ver Cuentas
+                </CDropdownItem>
+                <CDropdownItem onClick={() => setActiveTab("registroCuenta")}>
+                  Registrar Nueva Cuenta
+                </CDropdownItem>
+              </CDropdownMenu>
+            </CDropdown>
           </CNavbarNav>
         </CCollapse>
       </CContainer>
     </CNavbar>
   );
 };
+
 export default Header;

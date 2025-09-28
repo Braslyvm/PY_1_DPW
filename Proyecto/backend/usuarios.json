@@ -47,6 +47,16 @@
         "moneda": "USD",
         "limite": 10000.0,
         "saldo": 2500.0
+      },
+      {
+        "card_id": "CARD-006",
+        "tipo": "Black",
+        "numeroEnmascarado": "1334 **** **** 5678",
+        "exp": "12/26",
+        "titular": "Juan Pérez",
+        "moneda": "CRC",
+        "limite": 5000000.0,
+        "saldo": 1250000.5
       }
     ]
   }

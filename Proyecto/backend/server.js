@@ -179,6 +179,56 @@ app.get("/api/cuentas/:accountId", (req, res) => {
     res.status(500).json({ mensaje: "Error interno" });
   }
 });
+// ================= Obtener tarjetas de un usuario =================
+app.get("/api/usuarios/:username/tarjetas", (req, res) => {
+  const { username } = req.params;
+  try {
+    if (!fs.existsSync(FILE_PATH)) return res.status(404).json([]);
+    const usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
+    const user = usuarios.find((u) => u.username === username);
+    if (!user)
+      return res.status(404).json({ mensaje: "Usuario no encontrado" });
+    res.json(user.tarjetas || []);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
+});
+
+// ================= Obtener movimientos de tarjeta =================
+const DETALLES_TARJETAS_PATH = path.join(__dirname, "detalleesTarjetas.json");
+
+app.get("/api/tarjetas/:cardId", (req, res) => {
+  const { cardId } = req.params;
+  console.log("Buscando tarjeta:", cardId);
+
+  try {
+    if (!fs.existsSync(DETALLES_TARJETAS_PATH)) {
+      console.log("Archivo no encontrado:", DETALLES_TARJETAS_PATH);
+      return res
+        .status(404)
+        .json({ mensaje: "Archivo de detalles de tarjetas no encontrado" });
+    }
+
+    const detalles = JSON.parse(
+      fs.readFileSync(DETALLES_TARJETAS_PATH, "utf-8")
+    );
+    console.log("Archivo leído, número de tarjetas:", detalles.length);
+
+    const tarjeta = detalles.find((t) => t.card_id === cardId);
+
+    if (!tarjeta) {
+      console.log("Tarjeta no encontrada:", cardId);
+      return res.status(404).json({ mensaje: "Tarjeta no encontrada" });
+    }
+
+    console.log("Tarjeta encontrada:", tarjeta.card_id);
+    res.json(tarjeta);
+  } catch (err) {
+    console.error("Error leyendo detalles de tarjetas:", err);
+    res.status(500).json({ mensaje: "Error interno" });
+  }
+});
 
 // ================= Servidor =================
 const PORT = process.env.PORT || 4000;
