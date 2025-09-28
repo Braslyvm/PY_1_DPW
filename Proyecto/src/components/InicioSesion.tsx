@@ -63,7 +63,7 @@ const InicioSesion: React.FC = () => {
         </div>
       </form>
       <nav>
-        <button type="button" onClick={() => navigate("/profile")}>
+        <button type="button" onClick={() => navigate("/recuperar-contra")}>
           ¿Olvidaste tu contraseña?
         </button>
       </nav>
