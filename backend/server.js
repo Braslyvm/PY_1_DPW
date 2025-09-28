@@ -17,11 +17,15 @@ const app = express();
 // ====== Configuración CORS ======
 app.use(
   cors({
-    origin: "https://banconsfms.netlify.app", // dominio frontend en Netlify
+    origin: ["https://banconsfms.netlify.app", "http://localhost:5173"], // frontend en producción + pruebas locales
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   })
 );
+
+// Responder manualmente a OPTIONS (preflight)
+app.options("*", cors());
 
 app.use(express.json());
 
