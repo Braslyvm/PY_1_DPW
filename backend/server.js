@@ -33,9 +33,6 @@ app.use(cors({
   credentials: true,
 }));
 
-// Responder OPTIONS para preflight
-app.options("*", cors());
-
 app.use(express.json());
 
 // ================= Registro de usuario =================
@@ -48,23 +45,21 @@ app.post("/api/registro", (req, res) => {
       usuarios = JSON.parse(fs.readFileSync(FILE_PATH, "utf-8"));
     }
 
-    const usernameNorm = (usuario.username || "").toString().trim().toLowerCase();
-    const correoNorm = (usuario.correo || "").toString().trim().toLowerCase();
-    const numeroDocumento = (usuario.numeroDocumento || "").toString().trim();
-    const telefono = (usuario.telefono || usuario.numeroCelular || "").toString().trim();
+    const usernameNorm = (usuario.username || "").trim().toLowerCase();
+    const correoNorm = (usuario.correo || "").trim().toLowerCase();
+    const numeroDocumento = (usuario.numeroDocumento || "").trim();
+    const telefono = (usuario.telefono || usuario.numeroCelular || "").trim();
 
     const conflicts = {};
     usuarios.forEach((u) => {
-      if (u.username && u.username.toString().trim().toLowerCase() === usernameNorm)
+      if (u.username && u.username.trim().toLowerCase() === usernameNorm)
         conflicts.username = "El username ya está en uso.";
-      if (u.correo && u.correo.toString().trim().toLowerCase() === correoNorm)
+      if (u.correo && u.correo.trim().toLowerCase() === correoNorm)
         conflicts.correo = "El correo ya está en uso.";
-      if (u.numeroDocumento && u.numeroDocumento.toString().trim() === numeroDocumento)
+      if (u.numeroDocumento && u.numeroDocumento.trim() === numeroDocumento)
         conflicts.numeroDocumento = "El número de documento ya está en uso.";
-      if (
-        (u.telefono && u.telefono.toString().trim() === telefono) ||
-        (u.numeroCelular && u.numeroCelular.toString().trim() === telefono)
-      )
+      if ((u.telefono && u.telefono.trim() === telefono) ||
+          (u.numeroCelular && u.numeroCelular.trim() === telefono))
         conflicts.telefono = "El número de teléfono ya está en uso.";
     });
 
@@ -101,7 +96,6 @@ app.get("/api/usuarios", (req, res) => {
 // ================= Login =================
 app.post("/api/login", (req, res) => {
   const { username, password } = req.body;
-  console.log("Intento de login:", username);
 
   try {
     let usuarios = [];
@@ -114,10 +108,8 @@ app.post("/api/login", (req, res) => {
     );
 
     if (user) {
-      console.log("✅ Login exitoso:", username);
       res.json({ mensaje: "Inicio de sesión exitoso", user });
     } else {
-      console.warn("❌ Credenciales inválidas para:", username);
       res.status(401).json({ mensaje: "Credenciales inválidas" });
     }
   } catch (err) {
@@ -126,7 +118,7 @@ app.post("/api/login", (req, res) => {
   }
 });
 
-// ================= Obtener cuentas y tarjetas de un usuario =================
+// ================= Obtener cuentas de un usuario =================
 app.get("/api/usuarios/:username/cuentas", (req, res) => {
   const { username } = req.params;
   try {
@@ -141,6 +133,7 @@ app.get("/api/usuarios/:username/cuentas", (req, res) => {
   }
 });
 
+// ================= Obtener tarjetas de un usuario =================
 app.get("/api/usuarios/:username/tarjetas", (req, res) => {
   const { username } = req.params;
   try {
@@ -158,23 +151,17 @@ app.get("/api/usuarios/:username/tarjetas", (req, res) => {
 // ================= Obtener movimientos de cuenta =================
 app.get("/api/cuentas/:accountId", (req, res) => {
   const { accountId } = req.params;
-  console.log("Buscando cuenta:", accountId);
 
   try {
     if (!fs.existsSync(DETALLES_CUENTAS_PATH)) {
-      console.log("Archivo no encontrado:", DETALLES_CUENTAS_PATH);
       return res.status(404).json({ mensaje: "Archivo de detalles no encontrado" });
     }
 
     const detalles = JSON.parse(fs.readFileSync(DETALLES_CUENTAS_PATH, "utf-8"));
     const cuenta = detalles.find((c) => c.account_id === accountId);
 
-    if (!cuenta) {
-      console.log("Cuenta no encontrada:", accountId);
-      return res.status(404).json({ mensaje: "Cuenta no encontrada" });
-    }
+    if (!cuenta) return res.status(404).json({ mensaje: "Cuenta no encontrada" });
 
-    console.log("Cuenta encontrada:", cuenta.account_id);
     res.json(cuenta);
   } catch (err) {
     console.error("Error leyendo detalles de cuentas:", err);
@@ -190,5 +177,5 @@ app.use((req, res) => {
 // ================= Servidor =================
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor corriendo en http://localhost:${PORT}`);
+  console.log(`Servidor corriendo en http://localhost:${PORT}`);
 });
