@@ -32,12 +32,12 @@ const Registro: FC = () => {
   const [showTerminos, setShowTerminos] = useState(false);
 
   const handleChange = (
-  e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-) => {
-  const target = e.target as HTMLInputElement; // casteo a HTMLInputElement
-  const { name, value, type, checked } = target;
-  setForm({ ...form, [name]: type === "checkbox" ? checked : value });
-};
+    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const target = e.target as HTMLInputElement; // casteo a HTMLInputElement
+    const { name, value, type, checked } = target;
+    setForm({ ...form, [name]: type === "checkbox" ? checked : value });
+  };
 
   interface UsuarioType {
     nombreCompleto?: string;
@@ -52,7 +52,9 @@ const Registro: FC = () => {
 
   const validarExistenciaUsuario = async (usernameToCheck: string) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/usuarios`);
+      const response = await fetch(
+        `https://py1dpw-production.up.railway.app/api/usuarios`
+      );
       const usuarios = await response.json();
 
       const conflicts: { [key: string]: string } = {};
@@ -154,11 +156,14 @@ const Registro: FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch("https://py1dpw-production.up.railway.app/api/registro", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
-      });
+      const response = await fetch(
+        "https://py1dpw-production.up.railway.app/api/registro",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(form),
+        }
+      );
       const data = await response.json();
       alert(data.mensaje);
       setLoading(false);
