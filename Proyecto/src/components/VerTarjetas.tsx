@@ -47,6 +47,15 @@ const VerTarjetas: React.FC<VerTarjetasProps> = ({
     );
   }
 
+  // Función para enmascarar número de tarjeta
+  const maskCardNumber = (numero: string) => {
+    if (numero.length < 8) return numero; 
+    const primeros = numero.slice(0, 4);
+    const ultimos = numero.slice(-4);
+    const ocultos = "*".repeat(numero.length - 8);
+    return `${primeros}${ocultos}${ultimos}`;
+  };
+
   const getBackground = (tipo: string) => {
     switch (tipo) {
       case "Gold":
@@ -83,7 +92,7 @@ const VerTarjetas: React.FC<VerTarjetasProps> = ({
               }}
             >
               <h3>{tarjeta.tipo} Card</h3>
-              <p>{tarjeta.numeroEnmascarado}</p>
+              <p>{maskCardNumber(tarjeta.numeroEnmascarado)}</p>
               <p>Exp: {tarjeta.exp}</p>
               <p>Titular: {tarjeta.titular}</p>
               <p>
