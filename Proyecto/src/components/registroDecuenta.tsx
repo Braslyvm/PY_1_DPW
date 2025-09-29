@@ -23,12 +23,14 @@ const RegistroDeCuenta: FC<RegistroDeCuentaProps> = ({ setActiveTab }) => {
   };
 
   return (
-    <section style={{ padding: "20px" }}>
-      <header>
+    <section className="contenedor_main">
+    <div className="registrarcuenta-form-wrapper">
+      <header className="registrarcuenta-header">
         <h2>Registro de Cuenta</h2>
+        <p>Complete la información para registrar una nueva cuenta bancaria</p>
       </header>
       <main>
-        <form onSubmit={handleSubmit}>
+        <form className="registrarcuenta-form" onSubmit={handleSubmit}>
           <div>
             <label htmlFor="account_id">Identificador (IBAN):</label>
             <input
@@ -89,18 +91,16 @@ const RegistroDeCuenta: FC<RegistroDeCuentaProps> = ({ setActiveTab }) => {
               placeholder="customer_id del usuario"
             />
           </div>
-          <div style={{ marginTop: "15px" }}>
-            <button type="submit" style={{ marginRight: "10px" }}>
-              Registrar Cuenta
-            </button>
-            {/* Botón Cancelar que cierra el formulario */}
+          <div className="registrarcuenta-buttons">
+            <button type="submit">Registrar Cuenta</button>
             <button type="button" onClick={() => setActiveTab("cuentas")}>
               Cancelar
             </button>
           </div>
         </form>
       </main>
-    </section>
+    </div>
+  </section>
   );
 };
 

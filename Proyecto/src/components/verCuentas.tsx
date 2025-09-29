@@ -47,51 +47,27 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
   return (
     <section className="contenedor_main">
       <h2>Cuentas del Usuario</h2>
-      <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+      <div className="swiper-wrapper-custom">
         <Swiper
           modules={[Navigation, Pagination]}
           navigation
           pagination={{ clickable: true }}
           spaceBetween={20}
-          slidesPerView={1.2} // Muestra un poco de la siguiente slide
+          slidesPerView={1.2}
           observer={true}
           observeParents={true}
         >
           {cuentas.map((cuenta) => (
-            <SwiperSlide
-              key={cuenta.account_id}
-              style={{
-                backgroundColor: "#ec0303ff",
-                padding: "20px",
-                borderRadius: "8px",
-                color: "white",
-              }}
-            >
+            <SwiperSlide key={cuenta.account_id}>
               <div className="cuenta-card">
                 <h3>{cuenta.alias}</h3>
-                <p>
-                  <strong>Tipo:</strong> {cuenta.tipo}
-                </p>
-                <p>
-                  <strong>Moneda:</strong> {cuenta.moneda}
-                </p>
-                <p>
-                  <strong>Saldo:</strong> {cuenta.saldo.toLocaleString()}{" "}
-                  {cuenta.moneda}
-                </p>
+                <p><strong>Tipo:</strong> {cuenta.tipo}</p>
+                <p><strong>Moneda:</strong> {cuenta.moneda}</p>
+                <p><strong>Saldo:</strong> {cuenta.saldo.toLocaleString()} {cuenta.moneda}</p>
                 <button
                   onClick={() => {
                     setSelectedAccountId(cuenta.account_id);
                     setActiveTab("detalleCuenta");
-                  }}
-                  style={{
-                    marginTop: "10px",
-                    padding: "8px 12px",
-                    border: "none",
-                    borderRadius: "4px",
-                    backgroundColor: "#fff",
-                    color: "#ec0303",
-                    cursor: "pointer",
                   }}
                 >
                   Ver detalles
@@ -102,6 +78,7 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
         </Swiper>
       </div>
     </section>
+
   );
 };
 
