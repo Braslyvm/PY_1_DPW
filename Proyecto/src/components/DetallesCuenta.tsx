@@ -40,7 +40,7 @@ const DetallesCuenta: React.FC<DetallesCuentaProps> = ({
     }
 
     setLoading(true);
-    fetch(`http://localhost:4000/api/cuentas/${accountId}`)
+    fetch(`https://py1dpw-production.up.railway.app/api/cuentas/${accountId}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();

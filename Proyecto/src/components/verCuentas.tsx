@@ -27,7 +27,9 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
 
   useEffect(() => {
     if (username) {
-      fetch(`http://localhost:4000/api/usuarios/${username}/cuentas`)
+      fetch(
+        `https://py1dpw-production.up.railway.app/api/usuarios/${username}/cuentas`
+      )
         .then((res) => res.json())
         .then((data) => setCuentas(data))
         .catch((err) => console.error("Error al cargar cuentas:", err));

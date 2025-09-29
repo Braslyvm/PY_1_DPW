@@ -30,7 +30,9 @@ const VerTarjetas: React.FC<VerTarjetasProps> = ({
 
   useEffect(() => {
     if (username) {
-      fetch(`http://localhost:4000/api/usuarios/${username}/tarjetas`)
+      fetch(
+        `https://py1dpw-production.up.railway.app/api/usuarios/${username}/tarjetas`
+      )
         .then((res) => res.json())
         .then((data) => setTarjetas(data))
         .catch((err) => console.error("Error al cargar tarjetas:", err));

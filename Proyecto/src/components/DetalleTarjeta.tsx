@@ -34,7 +34,7 @@ const DetalleTarjeta: React.FC<DetalleTarjetaProps> = ({
 
   useEffect(() => {
     setLoading(true);
-    fetch(`http://localhost:4000/api/tarjetas/${cardId}`)
+    fetch(`https://py1dpw-production.up.railway.app/api/tarjetas/${cardId}`)
       .then((res) => {
         if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
         return res.json();
