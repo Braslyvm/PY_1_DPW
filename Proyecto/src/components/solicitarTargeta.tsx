@@ -194,69 +194,71 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
 
   return (
     <section className="contenedor_main">
-      <h2>Solicitar Tarjeta</h2>
-      <form onSubmit={handleSubmit} className="solicitud-tarjeta-form">
-        <div style={{ marginBottom: 12 }}>
-          <label>Filtrar por tipo de cuenta:</label>
-          <select
-            value={filtroTipo}
-            onChange={(e) => setFiltroTipo(e.target.value)}
-          >
-            <option value="">Todas</option>
-            <option value="Ahorro">Ahorro</option>
-            <option value="Corriente">Corriente</option>
-            <option value="Credito">Crédito</option>
-          </select>
-        </div>
+      <div className="registrarcuenta-form-wrapper">
+        <header className="registrarcuenta-header">
+          <h2>Solicitar Tarjeta</h2>
+          <p>Complete los datos para solicitar una nueva tarjeta</p>
+        </header>
+        <main>
+          <form className="registrarcuenta-form" onSubmit={handleSubmit}>
+            <div>
+              <label>Filtrar por tipo de cuenta:</label>
+              <select
+                value={filtroTipo}
+                onChange={(e) => setFiltroTipo(e.target.value)}
+              >
+                <option value="">Todas</option>
+                <option value="Ahorro">Ahorro</option>
+                <option value="Corriente">Corriente</option>
+                <option value="Credito">Crédito</option>
+              </select>
+            </div>
 
-        <div style={{ marginBottom: 12 }}>
-          <label>Cuenta (solo cuentas sin tarjeta):</label>
-          <select
-            required
-            value={cuentaSeleccionada}
-            onChange={(e) => setCuentaSeleccionada(e.target.value)}
-          >
-            <option value="">Seleccione cuenta</option>
-            {cuentasSinTarjeta
-              .filter((c) => !filtroTipo || c.tipo === filtroTipo)
-              .map((c) => (
-                <option key={c.account_id} value={c.account_id}>
-                  {c.alias} — {c.tipo} — {c.moneda} — Saldo:{" "}
-                  {c.saldo.toLocaleString()}
-                </option>
-              ))}
-          </select>
-        </div>
+            <div>
+              <label>Cuenta (solo cuentas sin tarjeta):</label>
+              <select
+                required
+                value={cuentaSeleccionada}
+                onChange={(e) => setCuentaSeleccionada(e.target.value)}
+              >
+                <option value="">Seleccione cuenta</option>
+                {cuentasSinTarjeta
+                  .filter((c) => !filtroTipo || c.tipo === filtroTipo)
+                  .map((c) => (
+                    <option key={c.account_id} value={c.account_id}>
+                      {c.alias} — {c.tipo} — {c.moneda} — Saldo:{" "}
+                      {c.saldo.toLocaleString()}
+                    </option>
+                  ))}
+              </select>
+            </div>
 
-        <div style={{ marginBottom: 12 }}>
-          <label>Tipo de tarjeta:</label>
-          <select
-            required
-            value={tipoTarjeta}
-            onChange={(e) => setTipoTarjeta(e.target.value as any)}
-          >
-            <option value="">Seleccione</option>
-            <option value="Gold">Gold</option>
-            <option value="Platinum">Platinum</option>
-            <option value="Black">Black</option>
-            <option value="NORMAL">NORMAL</option>
-          </select>
-        </div>
+            <div>
+              <label>Tipo de tarjeta:</label>
+              <select
+                required
+                value={tipoTarjeta}
+                onChange={(e) => setTipoTarjeta(e.target.value as any)}
+              >
+                <option value="">Seleccione</option>
+                <option value="Gold">Gold</option>
+                <option value="Platinum">Platinum</option>
+                <option value="Black">Black</option>
+                <option value="NORMAL">NORMAL</option>
+              </select>
+            </div>
 
-        <div style={{ marginTop: 16 }}>
-          <button type="submit" style={{ padding: "8px 12px" }}>
-            Solicitar tarjeta
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab("tarjetas")}
-            style={{ marginLeft: 8, padding: "8px 12px" }}
-          >
-            Cancelar
-          </button>
-        </div>
-      </form>
+            <div className="registrarcuenta-buttons">
+              <button type="submit">Solicitar tarjeta</button>
+              <button type="button" onClick={() => setActiveTab("tarjetas")}>
+                Cancelar
+              </button>
+            </div>
+          </form>
+        </main>
+      </div>
     </section>
+
   );
 };
 
