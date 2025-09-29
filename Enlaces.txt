@@ -1,0 +1,5 @@
+Repositorio de GitHub:https://github.com/Braslyvm/PY_1_DPW
+Enlace del sitio web desplegado: https://banconsfms.netlify.app/
+Se utilizo railway para el despliegue del api
+usuario: xxxx
+password: Elp703080520
