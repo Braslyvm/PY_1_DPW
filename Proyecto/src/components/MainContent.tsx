@@ -10,12 +10,6 @@ const MainContent: React.FC<MainContentProps> = ({
 }) => {
   return (
     <main>
-      {activeTab === "home" && (
-        <div>
-          <h2>Inicio del Dashboard</h2>
-          <p>Bienvenido a tu panel principal.</p>
-        </div>
-      )}
       {extraComponent}
     </main>
   );

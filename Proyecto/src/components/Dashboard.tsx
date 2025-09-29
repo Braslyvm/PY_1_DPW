@@ -1,19 +1,16 @@
 import React, { act, useState } from "react";
 import Header from "./Header";
-import HelloWorld from "./algo";
 import DetallesCuenta from "./DetallesCuenta";
-
 import DetalleTarjeta from "./DetalleTarjeta";
 import VerTarjetas from "./VerTarjetas";
 import RegistroDeCuenta from "./registroDecuenta";
 import ConsultarPIN from "./RecuperarPin";
-
 import MainContent from "./MainContent";
 import VerCuentas from "./verCuentas";
 import Transferencias from "./Trasnferencias";
 const Dashboard: React.FC = () => {
-  const [activeTab, setActiveTab] = useState("home");
-  const [previousTab, setPreviousTab] = useState("home"); // Para recordar la pestaña anterior
+  const [activeTab, setActiveTab] = useState("cuentas");
+  const [previousTab, setPreviousTab] = useState("cuentas"); // Para recordar la pestaña anterior
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
@@ -35,7 +32,6 @@ const Dashboard: React.FC = () => {
         activeTab={activeTab}
         extraComponent={
           <>
-            {activeTab === "hello" && <HelloWorld />}
             {activeTab === "cuentas" && (
               <VerCuentas
                 setActiveTab={handleSetActiveTab}

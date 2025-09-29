@@ -24,7 +24,7 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
   return (
     <CNavbar expand="lg" colorScheme="dark" className="bg-dark">
       <CContainer fluid>
-        <CNavbarBrand href="#">Mi Dashboard</CNavbarBrand>
+        <CNavbarBrand href="#">Banco NSFMS</CNavbarBrand>
         <CNavbarToggler
           aria-label="Toggle navigation"
           aria-expanded={visible}
@@ -32,16 +32,6 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
         />
         <CCollapse className="navbar-collapse" visible={visible}>
           <CNavbarNav className="me-auto">
-            {/* Sección Hola Mundo */}
-            <CNavItem>
-              <CNavLink
-                onClick={() => setActiveTab("hello")}
-                style={{ cursor: "pointer" }}
-              >
-                Hola Mundo
-              </CNavLink>
-            </CNavItem>
-
             {/* Sección Tarjetas */}
             <CNavItem>
               <CNavLink
