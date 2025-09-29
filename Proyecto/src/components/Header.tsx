@@ -64,6 +64,15 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
                 Transferencias
               </CNavLink>
             </CNavItem>
+
+            <CNavItem>
+              <CNavLink
+                onClick={() => setActiveTab("SolicitudTarjeta")}
+                style={{ cursor: "pointer" }}
+              >
+                Solicitar Tarjeta
+              </CNavLink>
+            </CNavItem>
           </CNavbarNav>
         </CCollapse>
       </CContainer>

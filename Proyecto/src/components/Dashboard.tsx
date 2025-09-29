@@ -8,6 +8,7 @@ import ConsultarPIN from "./RecuperarPin";
 import MainContent from "./MainContent";
 import VerCuentas from "./verCuentas";
 import Transferencias from "./Trasnferencias";
+import SolicitudTarjeta from "./solicitarTargeta";
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("cuentas");
   const [previousTab, setPreviousTab] = useState("cuentas"); // Para recordar la pestaña anterior
@@ -71,6 +72,9 @@ const Dashboard: React.FC = () => {
             )}
             {activeTab === "trasferencia" && username && (
               <Transferencias username={username} />
+            )}
+            {activeTab === "SolicitudTarjeta" && username && (
+              <SolicitudTarjeta username={username} />
             )}
           </>
         }
