@@ -21,6 +21,15 @@ interface VerTarjetasProps {
   setSelectedCardId: (id: string) => void;
 }
 
+  const maskCardNumber = (numero: string) => {
+    if (numero.length < 8) return numero; 
+    const primeros = numero.slice(0, 4);
+    const ultimos = numero.slice(-4);
+    const ocultos = "*".repeat(numero.length - 8);
+    return `${primeros}${ocultos}${ultimos}`;
+  };
+
+
 const VerTarjetas: React.FC<VerTarjetasProps> = ({
   setActiveTab,
   setSelectedCardId,
@@ -41,87 +50,106 @@ const VerTarjetas: React.FC<VerTarjetasProps> = ({
 
   if (tarjetas.length === 0) {
     return (
-      <section className="contenedor_main">
-        <h2>Cargando tarjetas...</h2>
+      <section className="tarjetas-main">
+        <h2 className="tarjetas-titulo">Cargando tarjetas...</h2>
       </section>
     );
   }
 
-  // Función para enmascarar número de tarjeta
-  const maskCardNumber = (numero: string) => {
-    if (numero.length < 8) return numero; 
-    const primeros = numero.slice(0, 4);
-    const ultimos = numero.slice(-4);
-    const ocultos = "*".repeat(numero.length - 8);
-    return `${primeros}${ocultos}${ultimos}`;
-  };
-
   const getBackground = (tipo: string) => {
-    switch (tipo) {
-      case "Gold":
-        return "linear-gradient(135deg, #FFD700, #FFA500)";
-      case "Platinum":
-        return "linear-gradient(135deg, #C0C0C0, #A9A9A9)";
-      case "Black":
-        return "linear-gradient(135deg, #000000, #434343)";
+    switch (tipo.toLowerCase()) {
+      case "gold":
+        return "linear-gradient(135deg, #fbc02d, #fdd835)";
+      case "platinum":
+        return "linear-gradient(135deg, #b0bec5, #90a4ae)";
+      case "black":
+        return "linear-gradient(135deg, #000000ff, #0f2a4d)";
       default:
         return "#ccc";
     }
   };
 
-  return (
-    <section className="contenedor_main">
-      <h2>Mis Tarjetas</h2>
-      <div style={{ maxWidth: "600px", margin: "0 auto" }}>
-        <Swiper
-          modules={[Navigation, Pagination]}
-          navigation
-          pagination={{ clickable: true }}
-          spaceBetween={20}
-          slidesPerView={1.2}
-        >
-          {tarjetas.map((tarjeta) => (
-            <SwiperSlide
-              key={tarjeta.card_id}
-              style={{
-                background: getBackground(tarjeta.tipo),
-                padding: "20px",
-                borderRadius: "12px",
-                color: "white",
-                minHeight: "180px",
-              }}
+ return (
+  <section className="tarjetas-main">
+    <h2 className="tarjetas-titulo">Mis Tarjetas</h2>
+    <p className="tarjetas-subtitulo">Consulta tu saldo y movimientos</p>
+
+    <div className="swiper-wrapper-tarjetas">
+      <Swiper
+        modules={[Navigation, Pagination]}
+        navigation
+        pagination={{ clickable: true }}
+        spaceBetween={20}
+        slidesPerView={1.2}
+      >
+        {tarjetas.map((tarjeta) => (
+          <SwiperSlide key={tarjeta.card_id}>
+            <div
+              className="tarjeta-card"
+              style={{ background: getBackground(tarjeta.tipo), position: "relative" }}
             >
-              <h3>{tarjeta.tipo} Card</h3>
-              <p>{maskCardNumber(tarjeta.numeroEnmascarado)}</p>
-              <p>Exp: {tarjeta.exp}</p>
-              <p>Titular: {tarjeta.titular}</p>
-              <p>
-                Saldo: {tarjeta.saldo.toLocaleString()} / Límite:{" "}
-                {tarjeta.limite.toLocaleString()} {tarjeta.moneda}
-              </p>
+              <div
+                className="tarjeta-icono"
+                style={{
+                  position: "absolute",
+                  top: "20px",
+                  left: "750px",
+                  fontSize: "2.5rem",
+          
+                }}
+              >
+                💳
+              </div>
+
+              <div className="tarjeta-info" style={{ marginBottom: "20px" }}>
+                <h3>{tarjeta.tipo} Card</h3>
+              </div>
+              <div className="tarjeta-info" style={{ marginBottom: "15px" }}>
+                <p
+                  style={{
+                    fontSize: "1.2rem",
+                    letterSpacing: "2px",
+                    margin: "5px 0",
+                  }}
+                >
+                  {maskCardNumber(tarjeta.numeroEnmascarado)}
+                </p>
+                <p style={{ fontSize: "0.9rem" }}>Exp: {tarjeta.exp}</p>
+              </div>
+              <div className="tarjeta-info" style={{ marginBottom: "15px" }}>
+                <p>Titular: {tarjeta.titular}</p>
+              </div>
+              <div
+                className="tarjeta-info"
+                style={{
+                  marginBottom: "20px",
+                  fontWeight: 600,
+                }}
+              >
+                <p>
+                  Saldo: {tarjeta.saldo.toLocaleString()} / Límite:{" "}
+                  {tarjeta.limite.toLocaleString()} {tarjeta.moneda}
+                </p>
+              </div>
               <button
+                className="btn-tarjeta-detalles"
                 onClick={() => {
                   setSelectedCardId(tarjeta.card_id);
                   setActiveTab("detalleTarjeta");
                 }}
-                style={{
-                  marginTop: "10px",
-                  padding: "8px 12px",
-                  border: "none",
-                  borderRadius: "6px",
-                  backgroundColor: "#fff",
-                  color: "#333",
-                  cursor: "pointer",
-                }}
               >
                 Ver movimientos
               </button>
-            </SwiperSlide>
-          ))}
-        </Swiper>
-      </div>
-    </section>
-  );
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+    </div>
+  </section>
+);
+
+
+
 };
 
 export default VerTarjetas;

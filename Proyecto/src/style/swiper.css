@@ -1,35 +1,106 @@
+.cuentas-wrapper {
+  width: 100%;
+  max-width: 900px;
+}
+
+.titulo {
+  font-size: 1.8rem;
+  font-weight: 600;
+  color: #1f2d3d;
+  margin-bottom: 5px;
+}
+
+.subtitulo {
+  font-size: 1rem;
+  color: #6c757d; 
+  margin-bottom: 20px;
+}
+
 .cuenta-card {
-  border: 1px solid #ccc;
+  background: #ffffff;
   border-radius: 12px;
-  padding: 1rem;
-  background-color: #fefefe;
-  text-align: center;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.08);
+  display: flex;
+  flex-direction: column;
+  align-items: center;     
+  justify-content: center; 
+  gap: 10px;
+  min-height: 260px;
+  text-align: center;     
 }
 
-.cuenta-card h3 {
-  margin-bottom: 0.5rem;
-  color: #333;
+.cuenta-icono {
+  width: 40px;
+  height: 40px;
+  background: #e9f2ff; 
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  color: #1976d2; 
+  margin-bottom: 12px;
 }
 
-.cuenta-card p {
-  margin: 0.25rem 0;
-  color: #555;
+.cuenta-alias {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2c3e50;
 }
 
-.cuenta-card button {
-  margin-top: 0.5rem;
-  padding: 0.5rem 1rem;
-  border: none;
-  background-color: #007bff;
-  color: white;
+.cuenta-tipo,
+.cuenta-moneda {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin: 0;
+}
+
+.cuenta-saldo {
+  font-size: 1.7rem;
+  font-weight: bold;
+  color: #28a745; 
+  margin-top: 14px;
+}
+
+.btn-detalles {
+  margin-top: 14px;
+  background: #ffffff;
+  border: 1px solid #dee2e6;
   border-radius: 6px;
+  padding: 8px 14px;
+  font-size: 0.95rem;
   cursor: pointer;
+  transition: background 0.2s;
+  align-self: center;  
 }
 
-.cuenta-card button:hover {
-  background-color: #0056b3;
+.btn-detalles:hover {
+  background: #f8f9fa;
 }
+
+.info-box {
+  margin-top: 30px;
+  padding: 15px;
+  border-radius: 8px;
+  background: #f8f9fa;
+  border: 1px solid #e9ecef;
+  font-size: 0.9rem;
+  color: #495057;
+}
+
+.info-header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.info-icon {
+  font-size: 1rem;
+  color: #1976d2;
+}
+
 
 .contenedor_main {
   background-color: var(--background);
@@ -51,7 +122,7 @@
 
 .swiper-wrapper-custom {
   width: 100%;
-  max-width: 800px; /* ocupa más espacio en pantallas grandes */
+  max-width: 800px; 
 }
 
 .cuenta-card {
@@ -234,3 +305,158 @@
   }
 }
 
+
+
+
+.tarjetas-main {
+  background-color: #f8f9fb; /* color similar al de la imagen */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 40px 20px;
+  min-height: calc(100vh - 56px);
+  box-sizing: border-box;
+  font-family: 'Arial', sans-serif;
+}
+
+.tarjetas-titulo {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #1a3365;
+  margin-bottom: 5px;
+}
+
+.tarjetas-subtitulo {
+  font-size: 1rem;
+  color: #6b7c93;
+  margin-bottom: 30px;
+}
+
+.swiper-wrapper-tarjetas {
+  width: 100%;
+  max-width: 1000px;
+}
+
+.tarjeta-card {
+  background: linear-gradient(135deg, #fbc02d, #fdd835); /* color default Gold Card */
+  border-radius: 12px;
+  padding: 20px;
+  color: #fff;
+  min-height: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.tarjeta-card .tarjeta-icono {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 2rem;
+  background: rgba(255,255,255,0.2);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.tarjeta-info h3 {
+  margin: 0;
+  font-weight: 700;
+}
+
+.tarjeta-info p {
+  margin: 2px 0;
+}
+
+.btn-tarjeta-detalles {
+  background-color: #1a3365;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 10px;
+  font-weight: 600;
+}
+
+.btn-tarjeta-detalles:hover {
+  background-color: #122255;
+}
+
+.info-tarjeta-box {
+  background-color: #fff;
+  border-radius: 12px;
+  padding: 20px;
+  margin-top: 40px;
+  max-width: 1000px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.info-tarjeta-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.info-tarjeta-icon {
+  margin-right: 10px;
+  font-size: 1.5rem;
+  color: #1a3365;
+}
+
+
+/* --- Responsive para móviles --- */
+@media (max-width: 480px) {
+  .tarjetas-main {
+    padding: 20px 10px;
+  }
+
+  .tarjetas-titulo {
+    font-size: 1.5rem;
+    text-align: center;
+  }
+
+  .tarjetas-subtitulo {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+
+  .swiper-wrapper-tarjetas {
+    max-width: 100%;
+  }
+
+  .tarjeta-card {
+    padding: 15px;
+    min-height: 180px;
+    border-radius: 10px;
+  }
+
+  .tarjeta-card .tarjeta-icono {
+    top: 15px;
+    left: auto;
+    right: 15px; /* Mueve el icono a la derecha en móvil */
+    width: 40px;
+    height: 40px;
+    font-size: 1.8rem;
+  }
+
+  .tarjeta-info h3 {
+    font-size: 1.2rem;
+  }
+
+  .tarjeta-info p {
+    font-size: 0.85rem;
+  }
+
+  .btn-tarjeta-detalles {
+    padding: 8px 16px;
+    font-size: 0.85rem;
+  }
+}
