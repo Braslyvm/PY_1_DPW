@@ -1,8 +1,11 @@
 import React, { useState, useEffect } from "react";
 import "../style/barraProgreso.css";
 
-// Componente principal de Consultar PIN
-const ConsultarPIN: React.FC = () => {
+interface ConsultarPINProps {
+  setActiveTab: () => void;
+}
+
+const ConsultarPIN: React.FC<ConsultarPINProps> = ({ setActiveTab }) => {
   // Estados del componente
   const [fase, setFase] = useState<
     "identificacion" | "verificacion" | "mostrarPIN"
@@ -49,7 +52,7 @@ const ConsultarPIN: React.FC = () => {
 
   // Contador para autoocultar PIN
   useEffect(() => {
-    let timer: NodeJS.Timeout;
+    let timer: ReturnType<typeof setTimeout>;
     if (fase === "mostrarPIN" && tiempoVisible > 0) {
       timer = setTimeout(() => setTiempoVisible(tiempoVisible - 1), 1000);
     } else if (fase === "mostrarPIN" && tiempoVisible === 0) {
