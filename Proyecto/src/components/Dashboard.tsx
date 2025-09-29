@@ -74,7 +74,10 @@ const Dashboard: React.FC = () => {
               <Transferencias username={username} />
             )}
             {activeTab === "SolicitudTarjeta" && username && (
-              <SolicitudTarjeta username={username} />
+              <SolicitudTarjeta
+                username={username}
+                setActiveTab={handleSetActiveTab}
+              />
             )}
           </>
         }
