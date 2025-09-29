@@ -185,102 +185,122 @@ const Transferencias: React.FC<TransferenciasProps> = ({ username }) => {
   };
 
   return (
-    <div className="transferencias-container">
-      <h2>Transferencias</h2>
-
-      <form onSubmit={handleContinuar}>
-        <label>Tipo de transferencia:</label>
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value as "propia" | "tercero")}
-        >
-          <option value="propia">Cuentas propias</option>
-          <option value="tercero">Terceros mismo banco</option>
-        </select>
-
-        <label>Cuenta origen:</label>
-        <select
-          name="origen"
-          value={form.origen}
-          onChange={handleChange}
-          required
-        >
-          <option value="">Seleccione cuenta</option>
-          {cuentas.map((c) => (
-            <option key={c.account_id} value={c.account_id}>
-              {c.alias} ({c.moneda}) - Saldo: {c.saldo.toFixed(2)}
-            </option>
-          ))}
-        </select>
-
-        {tipo === "propia" ? (
-          <>
-            <label>Cuenta destino:</label>
+  <section className="contenedor_main">
+    <div className="registrarcuenta-form-wrapper">
+      <header className="registrarcuenta-header">
+        <h2>Transferencias</h2>
+        <p>Complete los datos para realizar una transferencia</p>
+      </header>
+      <main>
+        <form className="registrarcuenta-form" onSubmit={handleContinuar}>
+          <div>
+            <label>Tipo de transferencia:</label>
             <select
-              name="destino"
-              value={form.destino}
+              value={tipo}
+              onChange={(e) => setTipo(e.target.value as "propia" | "tercero")}
+            >
+              <option value="propia">Cuentas propias</option>
+              <option value="tercero">Terceros mismo banco</option>
+            </select>
+          </div>
+
+          <div>
+            <label>Cuenta origen:</label>
+            <select
+              name="origen"
+              value={form.origen}
               onChange={handleChange}
               required
             >
               <option value="">Seleccione cuenta</option>
-              {cuentas
-                .filter((c) => c.account_id !== form.origen)
-                .map((c) => (
-                  <option key={c.account_id} value={c.account_id}>
-                    {c.alias} ({c.moneda}) - Saldo: {c.saldo.toFixed(2)}
-                  </option>
-                ))}
+              {cuentas.map((c) => (
+                <option key={c.account_id} value={c.account_id}>
+                  {c.alias} ({c.moneda}) - Saldo: {c.saldo.toFixed(2)}
+                </option>
+              ))}
             </select>
-          </>
-        ) : (
-          <>
-            <label>Cuenta destino (número):</label>
+          </div>
+
+          {tipo === "propia" ? (
+            <div>
+              <label>Cuenta destino:</label>
+              <select
+                name="destino"
+                value={form.destino}
+                onChange={handleChange}
+                required
+              >
+                <option value="">Seleccione cuenta</option>
+                {cuentas
+                  .filter((c) => c.account_id !== form.origen)
+                  .map((c) => (
+                    <option key={c.account_id} value={c.account_id}>
+                      {c.alias} ({c.moneda}) - Saldo: {c.saldo.toFixed(2)}
+                    </option>
+                  ))}
+              </select>
+            </div>
+          ) : (
+            <div>
+              <label>Cuenta destino (número):</label>
+              <input
+                type="text"
+                name="destino"
+                value={form.destino}
+                onChange={handleChange}
+                required
+              />
+              {!validDest.existe && (
+                <p style={{ color: "red" }}>Cuenta destino no encontrada</p>
+              )}
+            </div>
+          )}
+
+          <div>
+            <label>Moneda:</label>
+            <input type="text" value={form.moneda || ""} readOnly />
+          </div>
+
+          <div>
+            <label>Monto:</label>
             <input
-              type="text"
-              name="destino"
-              value={form.destino}
+              type="number"
+              step="0.01"
+              name="monto"
+              value={form.monto || 0}
               onChange={handleChange}
               required
             />
-            {!validDest.existe && (
-              <p style={{ color: "red" }}>Cuenta destino no encontrada</p>
-            )}
-          </>
-        )}
+          </div>
 
-        <label>Moneda:</label>
-        <input type="text" value={form.moneda || ""} readOnly />
+          <div>
+            <label>Descripción (opcional):</label>
+            <input
+              type="text"
+              name="descripcion"
+              maxLength={255}
+              value={form.descripcion}
+              onChange={handleChange}
+            />
+          </div>
 
-        <label>Monto:</label>
-        <input
-          type="number"
-          step="0.01"
-          name="monto"
-          value={form.monto || 0}
-          onChange={handleChange}
-          required
-        />
+          <div className="registrarcuenta-buttons">
+            <button
+              type="submit"
+              disabled={!form.origen || !form.destino || form.monto <= 0}
+            >
+              Continuar
+            </button>
 
-        <label>Descripción (opcional):</label>
-        <input
-          type="text"
-          name="descripcion"
-          maxLength={255}
-          value={form.descripcion}
-          onChange={handleChange}
-        />
+          </div>
+        </form>
 
-        <button
-          type="submit"
-          disabled={!form.origen || !form.destino || form.monto <= 0}
-        >
-          Continuar
-        </button>
-      </form>
-
-      {error && <p style={{ color: "red" }}>{error}</p>}
+        {error && <p style={{ color: "red" }}>{error}</p>}
+      </main>
     </div>
-  );
+  </section>
+);
+
 };
 
 export default Transferencias;
