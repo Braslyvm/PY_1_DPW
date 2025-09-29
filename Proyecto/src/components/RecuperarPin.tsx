@@ -3,9 +3,13 @@ import "../style/barraProgreso.css";
 
 interface ConsultarPINProps {
   setActiveTab: () => void;
+  cardId: string; // para saber de qué tarjeta se está recuperando el PIN
 }
 
-const ConsultarPIN: React.FC<ConsultarPINProps> = ({ setActiveTab }) => {
+const ConsultarPIN: React.FC<ConsultarPINProps> = ({
+  setActiveTab,
+  cardId,
+}) => {
   // Estados del componente
   const [fase, setFase] = useState<
     "identificacion" | "verificacion" | "mostrarPIN"
@@ -57,14 +61,17 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({ setActiveTab }) => {
       timer = setTimeout(() => setTiempoVisible(tiempoVisible - 1), 1000);
     } else if (fase === "mostrarPIN" && tiempoVisible === 0) {
       setPin(""); // ocultar PIN
-      setFase("identificacion"); // regresar al inicio
+      setFase("identificacion"); // resetear
       setTokenGenerado("");
       setTokenIngresado("");
       setValorValidacion("");
       setTipoValidacion("");
+
+      // Volver a detalle de tarjeta
+      setActiveTab();
     }
     return () => clearTimeout(timer);
-  }, [tiempoVisible, fase]);
+  }, [tiempoVisible, fase, setActiveTab]);
 
   // Copiar PIN al portapapeles
   const handleCopiarPIN = () => {
@@ -75,7 +82,7 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({ setActiveTab }) => {
   return (
     <main className="login-container">
       <header className="encabezado-recuperacion">
-        <h1 className="titulo-recuperacion">Consultar PIN</h1>
+        <h1 className="titulo-recuperacion">Consultar PIN de {cardId}</h1>
         <div className="progress-container">
           {["Identificación", "Verificación", "Mostrar PIN"].map(
             (step, index) => {

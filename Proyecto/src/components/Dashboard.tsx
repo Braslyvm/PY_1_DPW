@@ -47,6 +47,7 @@ const Dashboard: React.FC = () => {
                 accountId={selectedAccountId}
               />
             )}
+
             {activeTab === "tarjetas" && (
               <VerTarjetas
                 setActiveTab={handleSetActiveTab}
@@ -59,14 +60,16 @@ const Dashboard: React.FC = () => {
                 cardId={selectedCardId}
               />
             )}
+
             {activeTab === "registroCuenta" && (
               <RegistroDeCuenta
-                setActiveTab={() => setActiveTab(previousTab)} // Cancelar vuelve a la pestaña anterior
+                setActiveTab={() => setActiveTab(previousTab)}
               />
             )}
-            {activeTab === "recuperarPin" && (
+            {activeTab === "recuperarPin" && selectedCardId && (
               <ConsultarPIN
-                setActiveTab={() => setActiveTab(previousTab)} // Cancelar vuelve a la pestaña anterior
+                setActiveTab={() => setActiveTab("detalleTarjeta")}
+                cardId={selectedCardId}
               />
             )}
           </>

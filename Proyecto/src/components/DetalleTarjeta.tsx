@@ -64,7 +64,6 @@ const DetalleTarjeta: React.FC<DetalleTarjetaProps> = ({
   return (
     <section className="contenedor_main">
       <h1>Movimientos de la Tarjeta {tarjeta.card_id}</h1>
-
       {/* Filtros */}
       <div
         style={{
@@ -89,7 +88,6 @@ const DetalleTarjeta: React.FC<DetalleTarjetaProps> = ({
           onChange={(e) => setBusqueda(e.target.value)}
         />
       </div>
-
       {/* Tabla */}
       {movimientosFiltrados.length === 0 ? (
         <p>No hay movimientos.</p>
@@ -121,7 +119,10 @@ const DetalleTarjeta: React.FC<DetalleTarjetaProps> = ({
           </table>
         </main>
       )}
-
+      
+      <button onClick={() => setActiveTab("recuperarPin")}>
+        Recuperar PIN
+      </button>
       <button onClick={() => setActiveTab("tarjetas")}>Volver</button>
     </section>
   );

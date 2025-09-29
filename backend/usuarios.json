@@ -31,7 +31,7 @@
       {
         "card_id": "CARD-001",
         "tipo": "Gold",
-        "numeroEnmascarado": "1234 **** **** 5678",
+        "numeroEnmascarado": "1234 0000 0000 5678",
         "exp": "12/26",
         "titular": "Juan Pérez",
         "moneda": "CRC",
@@ -41,7 +41,7 @@
       {
         "card_id": "CARD-002",
         "tipo": "Platinum",
-        "numeroEnmascarado": "4321 **** **** 8765",
+        "numeroEnmascarado": "4321 0000 0000 8765",
         "exp": "08/27",
         "titular": "Juan Pérez",
         "moneda": "USD",
@@ -51,7 +51,7 @@
       {
         "card_id": "CARD-006",
         "tipo": "Black",
-        "numeroEnmascarado": "1334 **** **** 5678",
+        "numeroEnmascarado": "1334 0000 0000 5678",
         "exp": "12/26",
         "titular": "Juan Pérez",
         "moneda": "CRC",
