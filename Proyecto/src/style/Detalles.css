@@ -1,6 +1,4 @@
 
-
-/* Header sticky */
 #cuenta-header {
   background-color: #f06c00;
 
@@ -19,19 +17,19 @@
   color: #333;
 }
 
-/* Contenedor de scroll para la tabla */
+
 #cuenta-main {
-  overflow-x: auto; /* scroll horizontal */
-  overflow-y: auto; /* scroll vertical */
-  max-height: calc(100vh - 200px); /* se adapta a la pantalla */
+  overflow-x: auto;
+  overflow-y: auto;
+  max-height: calc(100vh - 200px);
   display: block;
 }
 
-/* Tabla */
+
 #cuenta-main table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px; /* permite scroll horizontal en pantallas pequeñas */
+  min-width: 600px; 
 }
 
 #cuenta-main thead {
@@ -57,24 +55,20 @@
 #cuenta-main tbody tr:hover {
   background-color: #e0f7fa;
 }
-
-/* Botón volver */
 .contenedor_main button {
   padding: 10px 20px;
   border: none;
-  background-color: #4caf50;
+  background-color:var(--accent);
   color: white;
   border-radius: 6px;
   cursor: pointer;
   font-size: 1rem;
   transition: background-color 0.3s ease;
 }
-
 .contenedor_main button:hover {
-  background-color: #45a049;
+  background-color: var(--block-bg);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .contenedor_main {
     padding: 10px;

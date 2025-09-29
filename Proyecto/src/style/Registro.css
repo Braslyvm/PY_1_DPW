@@ -1,4 +1,4 @@
-/* Select dentro del input-wrapper */
+
 .input-wrapper select {
   -webkit-appearance: none;
   -moz-appearance: none;
@@ -97,14 +97,12 @@
 }
 
 
-/* Contenedor del checkbox + botón términos */
 .checkbox-group {
-  margin-bottom: -3rem; /* menos espacio debajo */
+  margin-bottom: -3rem;
 }
 
-/* Nav de botones dentro del formulario */
 form nav {
   margin-top: 0rem;
   margin-bottom: 0.25rem;
-  gap: -2rem; /* si son varios botones dentro de un nav */
+  gap: -2rem; 
 }
