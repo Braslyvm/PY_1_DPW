@@ -163,7 +163,7 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({
               {loading ? "Validando..." : "Validar Código"}
             </button>
             <button
-              type="button"
+              type="submit" 
               onClick={() =>
                 alert(`Código reenviado al usuario: ${tokenGenerado}`)
               }
@@ -176,11 +176,11 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({
 
       {/* Paso 3: Mostrar PIN */}
       {fase === "mostrarPIN" && (
-        <section aria-label="PIN" className="success">
+        <section aria-label="PIN" className="recuperarPIN-container">
           <h2> PIN de la tarjeta:</h2>
-          <div className="pin-container">
-            <p className="pin">{pin}</p>
-            <button onClick={handleCopiarPIN}>Copiar PIN</button>
+          <div className="recuperarPIN-pin-container">
+            <p className="recuperarPIN-pin">{pin}</p>
+            <button className="recuperarPIN-button" onClick={handleCopiarPIN}>Copiar PIN</button>
           </div>
           <p>Se ocultará automáticamente en {tiempoVisible} segundos</p>
         </section>

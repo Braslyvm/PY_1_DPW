@@ -61,71 +61,77 @@ const DetalleTarjeta: React.FC<DetalleTarjetaProps> = ({
     return tipoMatch && busquedaMatch;
   });
 
-  return (
-    <section className="contenedor_main">
-      <h1>Movimientos de la Tarjeta {tarjeta.card_id}</h1>
-      {/* Filtros */}
-      <div
-        style={{
-          marginBottom: "15px",
-          display: "flex",
-          gap: "10px",
-          flexWrap: "wrap",
-        }}
+
+return (
+  <section className="contenedor_main">
+    <h1 className="movimientos-header">
+      Movimientos de la Tarjeta: {tarjeta.card_id}
+    </h1>
+    <div className="movimientos-filtros">
+      <select
+        value={tipoFiltro}
+        onChange={(e) => setTipoFiltro(e.target.value as any)}
       >
-        <select
-          value={tipoFiltro}
-          onChange={(e) => setTipoFiltro(e.target.value as any)}
-        >
-          <option value="TODOS">Todos</option>
-          <option value="COMPRA">Compras</option>
-          <option value="PAGO">Pagos</option>
-        </select>
-        <input
-          type="text"
-          placeholder="Buscar por descripción..."
-          value={busqueda}
-          onChange={(e) => setBusqueda(e.target.value)}
-        />
-      </div>
-      {/* Tabla */}
-      {movimientosFiltrados.length === 0 ? (
-        <p>No hay movimientos.</p>
-      ) : (
-        <main id="tarjeta-main">
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Fecha</th>
-                <th>Tipo</th>
-                <th>Descripción</th>
-                <th>Moneda</th>
-                <th>Monto</th>
+        <option value="TODOS">Todos</option>
+        <option value="COMPRA">Compras</option>
+        <option value="PAGO">Pagos</option>
+      </select>
+      <input
+        type="text"
+        placeholder="Buscar por descripción..."
+        value={busqueda}
+        onChange={(e) => setBusqueda(e.target.value)}
+      />
+    </div>
+    {movimientosFiltrados.length === 0 ? (
+      <p className="movimientos-empty">
+        No hay movimientos que coincidan con los filtros.
+      </p>
+    ) : (
+      <main className="movimientos-tabla">
+        <table>
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Fecha</th>
+              <th>Tipo</th>
+              <th>Descripción</th>
+              <th>Moneda</th>
+              <th>Monto</th>
+            </tr>
+          </thead>
+          <tbody>
+            {movimientosFiltrados.map((mov) => (
+              <tr key={mov.id}>
+                <td>{mov.id}</td>
+                <td>{new Date(mov.fecha).toLocaleString()}</td>
+                <td>{mov.tipo}</td>
+                <td>{mov.descripcion}</td>
+                <td>{mov.moneda}</td>
+                <td>{mov.saldo.toLocaleString()}</td>
               </tr>
-            </thead>
-            <tbody>
-              {movimientosFiltrados.map((mov) => (
-                <tr key={mov.id}>
-                  <td>{mov.id}</td>
-                  <td>{new Date(mov.fecha).toLocaleString()}</td>
-                  <td>{mov.tipo}</td>
-                  <td>{mov.descripcion}</td>
-                  <td>{mov.moneda}</td>
-                  <td>{mov.saldo.toLocaleString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </main>
-      )}
-      
-      <button onClick={() => setActiveTab("recuperarPin")}>
+            ))}
+          </tbody>
+        </table>
+      </main>
+    )}
+    <div style={{ display: "flex", gap: "10px", marginTop: "15px" }}>
+      <button
+        className="movimientos-button"
+        onClick={() => setActiveTab("recuperarPin")}
+      >
         Recuperar PIN
       </button>
-      <button onClick={() => setActiveTab("tarjetas")}>Volver</button>
-    </section>
-  );
+      <button
+        className="movimientos-button"
+        onClick={() => setActiveTab("tarjetas")}
+      >
+        Volver
+      </button>
+    </div>
+  </section>
+);
+
 };
 
 export default DetalleTarjeta;
