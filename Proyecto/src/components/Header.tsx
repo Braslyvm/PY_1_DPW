@@ -66,6 +66,14 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
                 </CDropdownItem>
               </CDropdownMenu>
             </CDropdown>
+            <CNavItem>
+              <CNavLink
+                onClick={() => setActiveTab("trasferencia")}
+                style={{ cursor: "pointer" }}
+              >
+                Transferencias
+              </CNavLink>
+            </CNavItem>
           </CNavbarNav>
         </CCollapse>
       </CContainer>
