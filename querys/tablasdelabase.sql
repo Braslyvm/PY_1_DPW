@@ -2,10 +2,12 @@
 -- ======= TABLAS =======
 CREATE TABLE rol (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Admin', 'Cliente')),
+    nombre VARCHAR(50),
     descripcion TEXT
 );
+
 -- ======= INSERTS PARA TABLA ROL =======
+
 INSERT INTO rol (nombre, descripcion)
 VALUES 
 ('Admin', 'Usuario con acceso completo al sistema, puede gestionar cuentas, usuarios y movimientos.'),
@@ -14,43 +16,41 @@ select * from rol
 
 CREATE TABLE tipo_identificacion (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Nacional', 'DIMEX', 'Pasaporte')),
+    nombre VARCHAR(50),
     descripcion TEXT
 );
 
 CREATE TABLE moneda (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Colón', 'Dólar')),
-    iso VARCHAR(10) UNIQUE NOT NULL CHECK (iso IN ('CRC', 'USD'))
+    nombre VARCHAR(50),
+    iso VARCHAR(10)
 );
 
 CREATE TABLE tipo_cuenta (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Ahorro', 'Corriente', 'Crédito')),
-    
+    nombre VARCHAR(50)
 );
 
 CREATE TABLE estado_cuenta (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Activa', 'Bloqueada', 'Cerrada')),
-   
+    nombre VARCHAR(50)
 );
 
 CREATE TABLE tipo_movimiento_cuenta (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Crédito', 'Débito')),
+    nombre VARCHAR(50),
     descripcion TEXT
 );
 
+
 CREATE TABLE tipo_tarjeta (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Débito', 'Crédito')),
-
+    nombre VARCHAR(50)
 );
 
 CREATE TABLE tipo_movimiento_tarjeta (
     id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Compra', 'Pago')),
+    nombre VARCHAR(50),
     descripcion TEXT
 );
 
@@ -111,7 +111,7 @@ CREATE TABLE tarjeta (
     limite NUMERIC(18,2) DEFAULT 0 CHECK (limite >= 0),
     saldo NUMERIC(18,2) DEFAULT 0 CHECK (saldo >= 0),
     pin_hash VARCHAR(255),
-    cvv_hash VARCHAR(255);
+    cvv_hash VARCHAR(255),
     FOREIGN KEY (usuario_documento) REFERENCES usuario(numero_documento),
     FOREIGN KEY (cuenta_id) REFERENCES cuenta(account_id),
     FOREIGN KEY (tipo) REFERENCES tipo_tarjeta(id),
@@ -139,3 +139,11 @@ CREATE TABLE api_key (
     etiqueta VARCHAR(100),
     activa BOOLEAN DEFAULT TRUE CHECK (activa IN (TRUE, FALSE))
 );
+
+
+
+
+
+
+
+
