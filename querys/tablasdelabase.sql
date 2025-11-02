@@ -1,11 +1,16 @@
 
 -- ======= TABLAS =======
-
 CREATE TABLE rol (
     id SERIAL PRIMARY KEY,
     nombre VARCHAR(50) NOT NULL CHECK (nombre IN ('Admin', 'Cliente')),
     descripcion TEXT
 );
+-- ======= INSERTS PARA TABLA ROL =======
+INSERT INTO rol (nombre, descripcion)
+VALUES 
+('Admin', 'Usuario con acceso completo al sistema, puede gestionar cuentas, usuarios y movimientos.'),
+('Cliente', 'Usuario estándar con acceso a sus cuentas, tarjetas y movimientos personales.');
+select * from rol
 
 CREATE TABLE tipo_identificacion (
     id SERIAL PRIMARY KEY,
@@ -105,8 +110,8 @@ CREATE TABLE tarjeta (
     moneda INT NOT NULL,
     limite NUMERIC(18,2) DEFAULT 0 CHECK (limite >= 0),
     saldo NUMERIC(18,2) DEFAULT 0 CHECK (saldo >= 0),
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    pin_hash VARCHAR(255),
+    cvv_hash VARCHAR(255);
     FOREIGN KEY (usuario_documento) REFERENCES usuario(numero_documento),
     FOREIGN KEY (cuenta_id) REFERENCES cuenta(account_id),
     FOREIGN KEY (tipo) REFERENCES tipo_tarjeta(id),
