@@ -59,3 +59,63 @@ $$;
 
 
 
+
+-- Crud de tipo_identificacion
+-- insert 
+create procedure insert_tipo_identificacion(
+    p_nombre varchar(50),
+    p_descripcion text
+)
+language plpgsql
+as $$
+begin
+    insert into tipo_identificacion (nombre, descripcion)
+    values (p_nombre, p_descripcion);
+end;
+$$;
+
+--delete 
+create procedure delete_tipo_identificacion(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from tipo_identificacion
+    where id = p_id;
+end;
+$$;
+
+-- update 
+create procedure update_tipo_identificacion(
+    p_id integer,
+    p_nombre varchar(50) default null,
+    p_descripcion text default null
+)
+language plpgsql
+as $$
+begin
+    update tipo_identificacion
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre),
+        descripcion = coalesce(nullif(p_descripcion, ''), descripcion)
+    where id = p_id;
+end;
+$$;
+
+-- select 
+create function select_tipo_identificacion()
+returns table (
+    id integer,
+    nombre varchar(50),
+    descripcion text
+)
+language plpgsql
+as $$
+begin
+    return query
+    select id, nombre, descripcion
+    from tipo_identificacion;
+end;
+$$;
+
