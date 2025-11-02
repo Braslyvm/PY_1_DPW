@@ -56,15 +56,6 @@ app.use(express.json());
 // ======================================================
 
 // Middleware para verificar API Key (usado en login)
-const verifyApiKey = (req, res, next) => {
-  const apiKey = req.headers["x-api-key"];
-  if (!apiKey) return res.status(401).json({ mensaje: "Falta API Key" });
-  if (apiKey !== process.env.API_KEY)
-    return res.status(403).json({ mensaje: "API Key inválida" });
-  next();
-};
-
-// Middleware para verificar JWT (usado en endpoints protegidos)
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader)
