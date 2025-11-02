@@ -56,17 +56,16 @@ app.use(express.json());
 // ======================================================
 
 // Middleware para verificar API Key (usado en login)
-const verifyToken = (req, res, next) => {
-  const authHeader = req.headers["authorization"];
-  if (!authHeader)
-    return res.status(401).json({ mensaje: "Falta token de autenticación" });
 
-  const token = authHeader.split(" ")[1];
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(403).json({ mensaje: "Token inválido o expirado" });
-    req.user = decoded; // Guarda los datos del usuario autenticado
-    next();
-  });
+// Middleware para verificar API Key (usado en login)
+const verifyApiKey = (req, res, next) => {
+  const apiKey = (req.headers["x-api-key"] || "").trim();
+  const expectedKey = (process.env.API_KEY || "").trim();
+
+  if (!apiKey) return res.status(401).json({ mensaje: "Falta API Key" });
+  if (apiKey !== expectedKey)
+    return res.status(403).json({ mensaje: "API Key inválida" });
+  next();
 };
 
 // ======================================================
