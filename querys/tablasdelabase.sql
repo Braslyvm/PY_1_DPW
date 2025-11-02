@@ -12,7 +12,7 @@ INSERT INTO rol (nombre, descripcion)
 VALUES 
 ('Admin', 'Usuario con acceso completo al sistema, puede gestionar cuentas, usuarios y movimientos.'),
 ('Cliente', 'Usuario estándar con acceso a sus cuentas, tarjetas y movimientos personales.');
-select * from rol
+
 
 CREATE TABLE tipo_identificacion (
     id SERIAL PRIMARY KEY,
@@ -148,11 +148,4 @@ CREATE TABLE otp (
     expira_en TIMESTAMP DEFAULT NOW() + INTERVAL '2 minutes', 
     consumido BOOLEAN DEFAULT FALSE                 
 );
-
-
-
-
-
-
-
 
