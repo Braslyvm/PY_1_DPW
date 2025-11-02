@@ -2,13 +2,14 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcrypt";
+import bcrypt from "bcryptjs";   
 import pkg from "pg";
 import { fileURLToPath } from "url";
 import path from "path";
 
 dotenv.config();
 const { Pool } = pkg;
+
 
 // ====== CONFIGURAR CONEXIÓN A POSTGRES ======
 const pool = new Pool({
