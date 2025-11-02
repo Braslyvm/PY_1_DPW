@@ -50,26 +50,25 @@ INSERT INTO tipo_movimiento_tarjeta (nombre, descripcion) VALUES
 -- 👤 USUARIOS DE PRUEBA
 -- ======================================
 
+
+-- ======================================
+-- 👤 USUARIOS DE PRUEBA
+-- ======================================
+
 -- Usuario Administrador
-INSERT INTO usuario (
-    tipo_identificacion, nombre, apellido1, apellido2, username,
-    fecha_nacimiento, correo, telefono, contrasena, rol
-)
-VALUES (
+CALL insert_usuario(
+    115470800, 
     1, 'Admin', 'Master', 'Root', 'admin',
-    '1985-01-01', 'admin@example.com', '+506 7000-0000',
-    crypt('Admin2025', gen_salt('bf')), 1
+    '1985-01-01', 'admin@example.com', '+50670000000',
+    'Admin2025', 1
 );
 
 -- Usuario Cliente
-INSERT INTO usuario (
-    tipo_identificacion, nombre, apellido1, apellido2, username,
-    fecha_nacimiento, correo, telefono, contrasena, rol
-)
-VALUES (
-    1, 'Carlos', 'Mora', 'Solis', 'cmora',
-    '1998-04-15', 'carlos.mora@example.com', '+506 6000-1234',
-    crypt('Carlos2025', gen_salt('bf')), 2
+CALL insert_usuario(
+    115470822,  -- número de cédula manual
+    1, 'Carlo', 'Mora', 'Solis', 'cmorad',
+    '1998-04-15', 'carlos.mra@example.com', '+50660001234',
+    'Carlos2025', 2
 );
 
 -- ======================================
@@ -79,21 +78,21 @@ VALUES (
 -- Cuenta en colones (Ahorro)
 INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
 VALUES (
-    'CR01-1234-5678-000000000011', 
-    2, -- número_documento del usuario 'cmora'
-    1, -- tipo: Ahorro
-    1, -- moneda: CRC
+    'CR01-1234-5678-000000000011',
+    115470822, -- número_documento del usuario 'cmora'
+    1,  -- tipo: Ahorro
+    1,  -- moneda: CRC
     1050000.50,
-    1  -- Activa
+    1   -- Activa
 );
 
 -- Cuenta en dólares (Corriente)
 INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
 VALUES (
     'CR01-4321-8765-000000000012',
-    2,
-    2, -- tipo: Corriente
-    2, -- USD
+    115470822,
+    2,  -- tipo: Corriente
+    2,  -- USD
     3200.00,
     1
 );
@@ -109,12 +108,12 @@ INSERT INTO tarjeta (
 )
 VALUES (
     'CARD-011',
-    2,
+    115470822,
     'CR01-1234-5678-000000000011',
-    1, -- Gold
+    1,  -- Gold
     '4111 0000 0000 1111',
     '11/26',
-    1, -- CRC
+    1,  -- CRC
     5000000.00,
     1250000.00,
     'hashpin111',
@@ -128,12 +127,12 @@ INSERT INTO tarjeta (
 )
 VALUES (
     'CARD-012',
-    2,
+    115470822,
     'CR01-4321-8765-000000000012',
-    2, -- Platinum
+    2,  -- Platinum
     '5222 0000 0000 2222',
     '08/27',
-    2, -- USD
+    2,  -- USD
     10000.00,
     2500.00,
     'hashpin222',

@@ -56,7 +56,7 @@ CREATE TABLE tipo_movimiento_tarjeta (
 
 -- ======= USUARIO =======
 CREATE TABLE usuario (
-    numero_documento SERIAL PRIMARY KEY,
+    numero_documento INT PRIMARY KEY,  -- 🔹 cédula ingresada manualmente
     tipo_identificacion INT NOT NULL,
     nombre VARCHAR(50) NOT NULL,
     apellido1 VARCHAR(50) NOT NULL,
@@ -70,7 +70,6 @@ CREATE TABLE usuario (
     FOREIGN KEY (tipo_identificacion) REFERENCES tipo_identificacion(id),
     FOREIGN KEY (rol) REFERENCES rol(id)
 );
-
 -- ======= CUENTAS =======
 CREATE TABLE cuenta (
     account_id VARCHAR(30) PRIMARY KEY,
@@ -84,6 +83,12 @@ CREATE TABLE cuenta (
     FOREIGN KEY (moneda) REFERENCES moneda(id),
     FOREIGN KEY (estado) REFERENCES estado_cuenta(id)
 );
+
+
+ALTER TABLE usuario ALTER COLUMN numero_documento DROP DEFAULT;
+ALTER TABLE usuario ALTER COLUMN numero_documento TYPE INT USING numero_documento::INT;
+ALTER TABLE usuario ALTER COLUMN numero_documento SET NOT NULL;
+DROP SEQUENCE IF EXISTS usuario_numero_documento_seq;
 
 -- ======= MOVIMIENTOS DE CUENTAS =======
 CREATE TABLE movimiento_cuenta (

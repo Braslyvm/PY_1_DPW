@@ -189,6 +189,7 @@ $$;
 
 --CREATE EXTENSION IF NOT EXISTS pgcrypto;
 CREATE OR REPLACE PROCEDURE insert_usuario(
+    p_numero_documento INT,
     p_tipo_identificacion INT,
     p_nombre VARCHAR(50),
     p_apellido1 VARCHAR(50),
@@ -204,13 +205,13 @@ LANGUAGE plpgsql
 AS $$
 BEGIN
     INSERT INTO usuario (
-        tipo_identificacion, nombre, apellido1, apellido2,
+        numero_documento, tipo_identificacion, nombre, apellido1, apellido2,
         username, fecha_nacimiento, correo, telefono, contrasena, rol
     )
     VALUES (
-        p_tipo_identificacion, p_nombre, p_apellido1, p_apellido2,
+        p_numero_documento, p_tipo_identificacion, p_nombre, p_apellido1, p_apellido2,
         p_username, p_fecha_nacimiento, p_correo, p_telefono,
-        crypt(p_contrasena, gen_salt('bf')),  -- 🔒 Aquí se genera el hash bcrypt
+        crypt(p_contrasena, gen_salt('bf')), 
         p_rol
     );
 END;
@@ -228,37 +229,28 @@ begin
 end;
 $$;
 
--- update 
-create procedure update_usuario(
-    p_numero_documento int,
-    p_tipo_identificacion int default null,
-    p_nombre varchar(50) default null,
-    p_apellido1 varchar(50) default null,
-    p_apellido2 varchar(50) default null,
-    p_username varchar(50) default null,
-    p_fecha_nacimiento date default null,
-    p_correo varchar(100) default null,
-    p_telefono varchar(25) default null,
-    p_contrasena varchar(255) default null,
-    p_rol int default null
+
+CREATE OR REPLACE PROCEDURE update_usuario(
+  p_numero_documento INT,
+  p_nombre VARCHAR(50),
+  p_apellido1 VARCHAR(50),
+  p_correo VARCHAR(100),
+  p_telefono VARCHAR(25)
 )
-language plpgsql
-as $$
-begin
-    update usuario
-    set
-        tipo_identificacion = coalesce(p_tipo_identificacion, tipo_identificacion),
-        nombre = coalesce(nullif(p_nombre, ''), nombre),
-        apellido1 = coalesce(nullif(p_apellido1, ''), apellido1),
-        apellido2 = coalesce(nullif(p_apellido2, ''), apellido2),
-        username = coalesce(nullif(p_username, ''), username),
-        fecha_nacimiento = coalesce(p_fecha_nacimiento, fecha_nacimiento),
-        correo = coalesce(nullif(p_correo, ''), correo),
-        telefono = coalesce(nullif(p_telefono, ''), telefono),
-        contrasena = coalesce(nullif(p_contrasena, ''), contrasena),
-        rol = coalesce(p_rol, rol)
-    where numero_documento = p_numero_documento;
-end;
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE usuario
+  SET nombre = COALESCE(p_nombre, nombre),
+      apellido1 = COALESCE(p_apellido1, apellido1),
+      correo = COALESCE(p_correo, correo),
+      telefono = COALESCE(p_telefono, telefono)
+  WHERE numero_documento = p_numero_documento;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Usuario con número de documento % no encontrado', p_numero_documento;
+  END IF;
+END;
 $$;
 
 -- Select 

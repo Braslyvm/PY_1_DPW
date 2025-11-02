@@ -156,14 +156,16 @@ app.post("/api/v1/auth/reset-password", verifyApiKey, async (req, res) => {
 
 // ========== 2. USUARIOS ==========
 
-// POST /api/v1/users  Crea usuario
 app.post("/api/v1/users", async (req, res) => {
-  const { tipo_identificacion, nombre, apellido1, apellido2, username, fecha_nacimiento, correo, telefono, contrasena, rol } = req.body;
+  const { numero_documento, tipo_identificacion, nombre, apellido1, apellido2,
+          username, fecha_nacimiento, correo, telefono, contrasena, rol } = req.body;
+
   try {
-    await pool.query("CALL insert_usuario($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)", [
-      tipo_identificacion, nombre, apellido1, apellido2, username,
-      fecha_nacimiento, correo, telefono, contrasena, rol
-    ]);
+    await pool.query(
+      "CALL insert_usuario($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)",
+      [numero_documento, tipo_identificacion, nombre, apellido1, apellido2,
+       username, fecha_nacimiento, correo, telefono, contrasena, rol]
+    );
     res.status(201).json({ mensaje: "Usuario creado exitosamente" });
   } catch (err) {
     console.error(err);
@@ -185,17 +187,28 @@ app.get("/api/v1/users/:id", verifyToken, async (req, res) => {
   }
 });
 
-// Actualiza usuario
+// Actualiza usuario (solo admin)
 app.put("/api/v1/users/:id", verifyToken, async (req, res) => {
+
   if (req.user.rol !== 1)
     return res.status(403).json({ mensaje: "Solo administradores pueden actualizar" });
-  const { id } = req.params;
+
+  const { id } = req.params; 
   const { nombre, apellido1, correo, telefono } = req.body;
+
+  
+  if (!nombre || !apellido1 || !correo)
+    return res.status(400).json({ mensaje: "Faltan datos obligatorios para actualizar" });
+
   try {
-    await pool.query("CALL update_usuario($1, NULL, $2, $3, NULL, NULL, NULL, $4, $5, NULL, NULL)", [id, nombre, apellido1, correo, telefono]);
-    res.json({ mensaje: "Usuario actualizado" });
+
+    await pool.query("CALL update_usuario($1,$2,$3,$4,$5)", [
+      id, nombre, apellido1, correo, telefono
+    ]);
+
+    res.json({ mensaje: "Usuario actualizado correctamente" });
   } catch (err) {
-    console.error(err);
+    console.error("❌ Error en update_usuario:", err);
     res.status(500).json({ mensaje: "Error actualizando usuario" });
   }
 });
