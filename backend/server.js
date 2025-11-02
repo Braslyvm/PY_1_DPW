@@ -166,6 +166,7 @@ app.use((req, res) => {
 // ================== INICIAR SERVIDOR ===================
 // ======================================================
 const PORT = process.env.PORT || 4000;
+console.log("🔍 API_KEY del entorno:", process.env.API_KEY);
 app.listen(PORT, () => {
   console.log(`✅ Servidor corriendo en http://localhost:${PORT}`);
 });
