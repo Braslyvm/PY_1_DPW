@@ -12,20 +12,21 @@ begin
 end;
 $$;
 
--- delete Rol
+-- Delete Rol
+
 create procedure delete_rol(
-    U_id INTEGER
+    p_id integer
 )
 language plpgsql
 as $$
 begin
-    delete from rol Where id = U_id;
+    delete from rol where id = p_id;
 end;
 $$;
 
 
--- update Rol
-create or replace procedure update_rol(
+-- Update Rol
+create procedure update_rol(
     p_id integer,
     p_nombre varchar(50) default null,
     p_descripcion text default null
@@ -52,16 +53,17 @@ language plpgsql
 as $$
 begin
     return query
-    select id, nombre, descripcion
-    from rol;
+    select r.id, r.nombre, r.descripcion
+    from rol r;
 end;
 $$;
 
 
 
 
+
 -- Crud de tipo_identificacion
--- insert 
+-- Insert
 create procedure insert_tipo_identificacion(
     p_nombre varchar(50),
     p_descripcion text
@@ -74,7 +76,7 @@ begin
 end;
 $$;
 
---delete 
+-- Delete
 create procedure delete_tipo_identificacion(
     p_id integer
 )
@@ -86,7 +88,7 @@ begin
 end;
 $$;
 
--- update 
+-- Update
 create procedure update_tipo_identificacion(
     p_id integer,
     p_nombre varchar(50) default null,
@@ -103,7 +105,7 @@ begin
 end;
 $$;
 
--- select 
+-- Select
 create function select_tipo_identificacion()
 returns table (
     id integer,
@@ -114,8 +116,113 @@ language plpgsql
 as $$
 begin
     return query
-    select id, nombre, descripcion
-    from tipo_identificacion;
+    select ti.id, ti.nombre, ti.descripcion
+    from tipo_identificacion ti;
 end;
 $$;
 
+
+
+
+-- Crud de moneda
+-- Insert
+create procedure insert_moneda(
+    p_nombre varchar(50),
+    p_iso varchar(10)
+)
+language plpgsql
+as $$
+begin
+    insert into moneda (nombre, iso)
+    values (p_nombre, p_iso);
+end;
+$$;
+
+-- Delete
+create procedure delete_moneda(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from moneda
+    where id = p_id;
+end;
+$$;
+
+-- Update
+create procedure update_moneda(
+    p_id integer,
+    p_nombre varchar(50) default null,
+    p_iso varchar(10) default null
+)
+language plpgsql
+as $$
+begin
+    update moneda
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre),
+        iso = coalesce(nullif(p_iso, ''), iso)
+    where id = p_id;
+end;
+$$;
+
+-- Select
+create function select_moneda()
+returns table (
+    id integer,
+    nombre varchar(50),
+    iso varchar(10)
+)
+language plpgsql
+as $$
+begin
+    return query
+    select m.id, m.nombre, m.iso
+    from moneda m
+    order by m.id;
+end;
+$$;
+
+
+
+
+-- insert
+-- delete 
+-- update 
+-- Select 
+
+
+
+
+
+-- insert
+-- delete 
+-- update 
+-- Select 
+
+
+
+
+
+-- insert
+-- delete 
+-- update 
+-- Select 
+
+
+
+
+
+-- insert
+-- delete 
+-- update 
+-- Select 
+
+
+
+
+-- insert
+-- delete 
+-- update
+ -- Select 
