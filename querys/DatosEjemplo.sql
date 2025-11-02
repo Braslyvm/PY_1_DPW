@@ -133,3 +133,17 @@ SELECT * FROM cuenta;
 SELECT * FROM tarjeta;
 SELECT * FROM movimiento_cuenta;
 SELECT * FROM movimiento_tarjeta;
+
+
+CALL insert_usuario(
+    1, -- tipo_identificacion: Nacional
+    'Carlos', -- nombre
+    'Mora',   -- primer apellido
+    'Solis',  -- segundo apellido
+    'cmora',  -- username
+    '1998-04-15', -- fecha de nacimiento
+    'carlos.mora@example.com', -- correo
+    '+506 6000-1234', -- teléfono
+    'Carlos2025', -- contraseña en texto plano (se encripta dentro del SP)
+    2 -- rol: Cliente
+);

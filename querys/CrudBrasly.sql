@@ -186,32 +186,34 @@ $$;
 
 
 
--- Crud Usuario
--- insert
-create or replace procedure insert_usuario(
-    p_tipo_identificacion int,
-    p_nombre varchar(50),
-    p_apellido1 varchar(50),
-    p_apellido2 varchar(50),
-    p_username varchar(50),
-    p_fecha_nacimiento date,
-    p_correo varchar(100),
-    p_telefono varchar(25),
-    p_contrasena varchar(255),
-    p_rol int
+
+--CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE OR REPLACE PROCEDURE insert_usuario(
+    p_tipo_identificacion INT,
+    p_nombre VARCHAR(50),
+    p_apellido1 VARCHAR(50),
+    p_apellido2 VARCHAR(50),
+    p_username VARCHAR(50),
+    p_fecha_nacimiento DATE,
+    p_correo VARCHAR(100),
+    p_telefono VARCHAR(25),
+    p_contrasena VARCHAR(255),
+    p_rol INT
 )
-language plpgsql
-as $$
-begin
-    insert into usuario (
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO usuario (
         tipo_identificacion, nombre, apellido1, apellido2,
         username, fecha_nacimiento, correo, telefono, contrasena, rol
     )
-    values (
+    VALUES (
         p_tipo_identificacion, p_nombre, p_apellido1, p_apellido2,
-        p_username, p_fecha_nacimiento, p_correo, p_telefono, p_contrasena, p_rol
+        p_username, p_fecha_nacimiento, p_correo, p_telefono,
+        crypt(p_contrasena, gen_salt('bf')),  -- 🔒 Aquí se genera el hash bcrypt
+        p_rol
     );
-end;
+END;
 $$;
 
 -- delete 
