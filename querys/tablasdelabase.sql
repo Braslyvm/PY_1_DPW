@@ -139,6 +139,15 @@ CREATE TABLE api_key (
     etiqueta VARCHAR(100),
     activa BOOLEAN DEFAULT TRUE CHECK (activa IN (TRUE, FALSE))
 );
+CREATE TABLE otp (
+    id SERIAL PRIMARY KEY,
+    usuario INT NOT NULL REFERENCES usuario(numero_documento),
+    codigo VARCHAR(6) NOT NULL,                    
+    proposito VARCHAR(50) NOT NULL,                 
+    creado_en TIMESTAMP DEFAULT NOW(),            
+    expira_en TIMESTAMP DEFAULT NOW() + INTERVAL '2 minutes', 
+    consumido BOOLEAN DEFAULT FALSE                 
+);
 
 
 

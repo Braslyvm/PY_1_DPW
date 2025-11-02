@@ -446,3 +446,269 @@ begin
     order by t.card_id;
 end;
 $$;
+
+
+-- Verifica las credenciales del usuario (login).
+CREATE OR REPLACE FUNCTION sp_auth_user_get_by_username_or_email(
+    p_usuario VARCHAR(100),
+    p_contrasena VARCHAR(255)
+)
+RETURNS TABLE (
+    valido BOOLEAN,
+    numero_documento INT,
+    username VARCHAR(50),
+    correo VARCHAR(100),
+    rol INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        (u.contrasena = crypt(p_contrasena, u.contrasena)) AS valido,
+        u.numero_documento,
+        u.username,
+        u.correo,
+        u.rol
+    FROM usuario u
+    WHERE u.username = p_usuario OR u.correo = p_usuario;
+END;
+$$;
+
+
+-- Comprueba si una API Key está activa y es válida.
+CREATE OR REPLACE FUNCTION sp_api_key_is_active(
+    p_clave VARCHAR(255)
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_valida BOOLEAN := FALSE;
+BEGIN
+    SELECT TRUE
+    INTO v_valida
+    FROM api_key
+    WHERE activa = TRUE
+      AND clave_hash = crypt(p_clave, clave_hash)
+    LIMIT 1;
+
+    RETURN COALESCE(v_valida, FALSE);
+END;
+$$;
+
+
+-- Genera y guarda un código OTP para un usuario y propósito.
+CREATE OR REPLACE FUNCTION sp_otp_create(
+    p_usuario INT,
+    p_proposito VARCHAR(50)
+)
+RETURNS VARCHAR(6)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_codigo VARCHAR(6);
+BEGIN
+    v_codigo := lpad((trunc(random() * 999999))::text, 6, '0');
+    INSERT INTO otp (usuario, codigo, proposito)
+    VALUES (p_usuario, v_codigo, p_proposito);
+    RETURN v_codigo;
+END;
+$$;
+
+-- Valida y consume (marca como usado) un OTP válido.
+CREATE OR REPLACE FUNCTION sp_otp_consume(
+    p_usuario INT,
+    p_codigo VARCHAR(6),
+    p_proposito VARCHAR(50)
+)
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_valido BOOLEAN := FALSE;
+BEGIN
+    SELECT TRUE
+    INTO v_valido
+    FROM otp
+    WHERE usuario = p_usuario
+      AND codigo = p_codigo
+      AND proposito = p_proposito
+      AND consumido = FALSE
+      AND expira_en > NOW()
+    LIMIT 1;
+
+    IF v_valido THEN
+        UPDATE otp
+        SET consumido = TRUE
+        WHERE usuario = p_usuario AND codigo = p_codigo;
+        RETURN TRUE;
+    ELSE
+        RETURN FALSE;
+    END IF;
+END;
+$$;
+
+
+-- Devuelve todos los usuarios o uno específico.
+CREATE OR REPLACE FUNCTION select_usuario(
+    p_numero_documento INT DEFAULT NULL
+)
+RETURNS TABLE (
+    numero_documento INT,
+    tipo_identificacion INT,
+    nombre VARCHAR(50),
+    apellido1 VARCHAR(50),
+    apellido2 VARCHAR(50),
+    username VARCHAR(50),
+    fecha_nacimiento DATE,
+    correo VARCHAR(100),
+    telefono VARCHAR(25),
+    contrasena VARCHAR(255),
+    rol INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        u.numero_documento, u.tipo_identificacion, u.nombre,
+        u.apellido1, u.apellido2, u.username, u.fecha_nacimiento,
+        u.correo, u.telefono, u.contrasena, u.rol
+    FROM usuario u
+    WHERE (p_numero_documento IS NULL OR u.numero_documento = p_numero_documento)
+    ORDER BY u.numero_documento;
+END;
+$$;
+
+-- Cambia el estado de una cuenta (activa, bloqueada, cerrada).
+CREATE OR REPLACE PROCEDURE sp_accounts_set_status(
+    p_account_id VARCHAR(30),
+    p_nuevo_estado INT
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_saldo NUMERIC(18,2);
+BEGIN
+    SELECT saldo INTO v_saldo FROM cuenta WHERE account_id = p_account_id FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Cuenta % no existe', p_account_id;
+    END IF;
+
+    IF p_nuevo_estado = 3 AND v_saldo <> 0 THEN
+        RAISE EXCEPTION 'No se puede cerrar una cuenta con saldo distinto de 0';
+    END IF;
+
+    UPDATE cuenta SET estado = p_nuevo_estado WHERE account_id = p_account_id;
+END;
+$$;
+
+
+-- Inserta un movimiento de tarjeta (compra o pago).
+CREATE OR REPLACE PROCEDURE sp_card_movement_add(
+    p_card_id VARCHAR(20),
+    p_tipo INT,
+    p_moneda INT,
+    p_monto NUMERIC(18,2),
+    p_descripcion TEXT DEFAULT NULL
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_limite NUMERIC(18,2);
+    v_saldo NUMERIC(18,2);
+BEGIN
+    SELECT limite, saldo INTO v_limite, v_saldo
+    FROM tarjeta
+    WHERE card_id = p_card_id
+    FOR UPDATE;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Tarjeta % no existe', p_card_id;
+    END IF;
+
+    IF p_monto <= 0 THEN
+        RAISE EXCEPTION 'El monto debe ser positivo';
+    END IF;
+
+    
+    IF p_tipo = 1 THEN
+        IF v_saldo + p_monto > v_limite THEN
+            RAISE EXCEPTION 'Límite de crédito excedido';
+        END IF;
+        UPDATE tarjeta SET saldo = saldo + p_monto WHERE card_id = p_card_id;
+    ELSE
+       
+        UPDATE tarjeta SET saldo = saldo - p_monto WHERE card_id = p_card_id;
+    END IF;
+
+    INSERT INTO movimiento_tarjeta (card_id, tipo, descripcion, moneda, monto)
+    VALUES (p_card_id, p_tipo, COALESCE(p_descripcion, 'Movimiento de tarjeta'), p_moneda, p_monto);
+END;
+$$;
+
+-- Lista los movimientos de una tarjeta con filtros.
+CREATE OR REPLACE FUNCTION sp_card_movements_list(
+    p_card_id VARCHAR(20),
+    p_fecha_desde TIMESTAMP DEFAULT NULL,
+    p_fecha_hasta TIMESTAMP DEFAULT NULL,
+    p_tipo INT DEFAULT NULL
+)
+RETURNS TABLE (
+    id INT,
+    card_id VARCHAR(20),
+    fecha TIMESTAMP,
+    tipo INT,
+    descripcion TEXT,
+    moneda INT,
+    monto NUMERIC(18,2)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT mt.id, mt.card_id, mt.fecha, mt.tipo, mt.descripcion, mt.moneda, mt.monto
+    FROM movimiento_tarjeta mt
+    WHERE mt.card_id = p_card_id
+      AND (p_fecha_desde IS NULL OR mt.fecha >= p_fecha_desde)
+      AND (p_fecha_hasta IS NULL OR mt.fecha <= p_fecha_hasta)
+      AND (p_tipo IS NULL OR mt.tipo = p_tipo)
+    ORDER BY mt.fecha DESC;
+END;
+$$;
+
+
+-- Verifica si una cuenta existe y devuelve datos básicos del titular.
+CREATE OR REPLACE FUNCTION sp_bank_validate_account(
+    p_account_id VARCHAR(30)
+)
+RETURNS TABLE (
+    existe BOOLEAN,
+    titular_nombre VARCHAR(100),
+    titular_correo VARCHAR(100),
+    moneda VARCHAR(10),
+    saldo NUMERIC(18,2)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    SELECT
+        TRUE,
+        CONCAT(u.nombre, ' ', u.apellido1, ' ', u.apellido2),
+        u.correo,
+        m.iso,
+        c.saldo
+    FROM cuenta c
+    JOIN usuario u ON u.numero_documento = c.usuario_documento
+    JOIN moneda m ON m.id = c.moneda
+    WHERE c.account_id = p_account_id;
+
+    IF NOT FOUND THEN
+        RETURN QUERY SELECT FALSE, NULL, NULL, NULL, NULL;
+    END IF;
+END;
+$$;
+
