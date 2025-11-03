@@ -1,13 +1,11 @@
 import express from "express";
 import cors from "cors";
-import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";   
 import pkg from "pg";
 import { fileURLToPath } from "url";
 import path from "path";
 
-dotenv.config();
 const { Pool } = pkg;
 
 
@@ -18,7 +16,7 @@ const pool = new Pool({
   user: process.env.PGUSER,
   password: process.env.PGPASSWORD,
   database: process.env.PGDATABASE,
-  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
+  ssl: false
 });
 
 
