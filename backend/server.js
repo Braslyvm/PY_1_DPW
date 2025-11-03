@@ -1,15 +1,12 @@
 import express from "express";
 import cors from "cors";
 import jwt from "jsonwebtoken";
-import bcrypt from "bcryptjs";   
+import bcrypt from "bcryptjs";
 import pkg from "pg";
 import { fileURLToPath } from "url";
 import path from "path";
 
 const { Pool } = pkg;
-
-
-// ====== CONFIGURAR CONEXIÓN A POSTGRES ======
 const pool = new Pool({
   host: process.env.PGHOST,
   port: process.env.PGPORT,
@@ -22,57 +19,57 @@ const pool = new Pool({
 
 pool.on("connect", () => console.log("✅ Conectado a PostgreSQL"));
 
-// ====== Definir __dirname para ESM ======
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-// ====== CONFIGURACIÓN SERVIDOR ======
 const app = express();
-
-// ====== Configuración CORS ======
-const allowedOrigins = [
-  "https://banconsfms.netlify.app",
-  "http://localhost:5173"
-];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error("Not allowed by CORS"));
-    }
-  },
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
-  credentials: true,
-}));
-
 app.use(express.json());
 
-// ======================================================
-// ================== MIDDLEWARES =======================
-// ======================================================
+const allowedOrigins = [
+  "https://banconsfms.netlify.app",
+  "http://localhost:5173",
+];
 
-// Middleware para verificar API Key (usado en login)
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "x-api-key"],
+    credentials: true,
+  })
+);
+
+
+// --- Verificar API Key ---
 const verifyApiKey = (req, res, next) => {
-  const apiKey = req.headers["x-api-key"];
-  if (!apiKey) return res.status(401).json({ mensaje: "Falta API Key" });
-  if (apiKey !== process.env.API_KEY)
+  const apiKey = (req.headers["x-api-key"] || "").trim();
+  const expectedKey = (process.env.API_KEY || "").trim();
+
+  if (!apiKey)
+    return res.status(401).json({ mensaje: "Falta API Key en los encabezados" });
+
+  if (apiKey !== expectedKey)
     return res.status(403).json({ mensaje: "API Key inválida" });
+
   next();
 };
 
-// Middleware para verificar JWT (usado en endpoints protegidos)
+// --- Verificar JWT ---
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   if (!authHeader)
     return res.status(401).json({ mensaje: "Falta token de autenticación" });
 
   const token = authHeader.split(" ")[1];
+  if (!token)
+    return res.status(401).json({ mensaje: "Token no proporcionado" });
+
   jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
     if (err) return res.status(403).json({ mensaje: "Token inválido o expirado" });
-    req.user = decoded; 
+    req.user = decoded; // Guarda los datos del usuario autenticado
     next();
   });
 };
