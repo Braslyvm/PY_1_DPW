@@ -154,3 +154,22 @@ CREATE TABLE otp (
     consumido BOOLEAN DEFAULT FALSE                 
 );
 
+-- ===========================
+-- 🧨 ELIMINAR TODAS LAS TABLAS
+-- ===========================
+
+DROP TABLE IF EXISTS movimiento_tarjeta CASCADE;
+DROP TABLE IF EXISTS tarjeta CASCADE;
+DROP TABLE IF EXISTS movimiento_cuenta CASCADE;
+DROP TABLE IF EXISTS cuenta CASCADE;
+DROP TABLE IF EXISTS otp CASCADE;
+DROP TABLE IF EXISTS api_key CASCADE;
+DROP TABLE IF EXISTS usuario CASCADE;
+DROP TABLE IF EXISTS tipo_movimiento_tarjeta CASCADE;
+DROP TABLE IF EXISTS tipo_tarjeta CASCADE;
+DROP TABLE IF EXISTS tipo_movimiento_cuenta CASCADE;
+DROP TABLE IF EXISTS estado_cuenta CASCADE;
+DROP TABLE IF EXISTS tipo_cuenta CASCADE;
+DROP TABLE IF EXISTS moneda CASCADE;
+DROP TABLE IF EXISTS tipo_identificacion CASCADE;
+DROP TABLE IF EXISTS rol CASCADE;

@@ -550,6 +550,8 @@ END;
 $$;
 
 
+
+
 -- Devuelve todos los usuarios o uno específico.
 CREATE OR REPLACE FUNCTION select_usuario(
     p_numero_documento INT DEFAULT NULL
@@ -578,6 +580,28 @@ BEGIN
     FROM usuario u
     WHERE (p_numero_documento IS NULL OR u.numero_documento = p_numero_documento)
     ORDER BY u.numero_documento;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION sp_verify_password(
+  p_numero_documento INT,
+  p_password TEXT
+) RETURNS BOOLEAN
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  v_hash TEXT;
+BEGIN
+  SELECT contrasena INTO v_hash
+  FROM usuario
+  WHERE numero_documento = p_numero_documento;
+
+  IF NOT FOUND THEN
+    RETURN FALSE;
+  END IF;
+
+  -- crypt(p_password, v_hash) genera el hash con la misma salt y lo compara
+  RETURN v_hash = crypt(p_password, v_hash);
 END;
 $$;
 
@@ -696,19 +720,415 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT
-        TRUE,
-        CONCAT(u.nombre, ' ', u.apellido1, ' ', u.apellido2),
-        u.correo,
-        m.iso,
-        c.saldo
+        TRUE::BOOLEAN,
+        CONCAT(u.nombre, ' ', u.apellido1, ' ', u.apellido2)::VARCHAR(100),
+        u.correo::VARCHAR(100),
+        m.iso::VARCHAR(10),
+        c.saldo::NUMERIC(18,2)
     FROM cuenta c
     JOIN usuario u ON u.numero_documento = c.usuario_documento
     JOIN moneda m ON m.id = c.moneda
     WHERE c.account_id = p_account_id;
 
     IF NOT FOUND THEN
-        RETURN QUERY SELECT FALSE, NULL, NULL, NULL, NULL;
+        RETURN QUERY SELECT FALSE::BOOLEAN, NULL::VARCHAR(100), NULL::VARCHAR(100), NULL::VARCHAR(10), NULL::NUMERIC(18,2);
     END IF;
 END;
 $$;
+
+--proceso para cambio de contrase
+CREATE OR REPLACE PROCEDURE sp_usuario_cambiar_contrasena(
+    p_numero_documento INT,
+    p_nueva_contrasena VARCHAR(255)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    UPDATE usuario
+    SET contrasena = crypt(p_nueva_contrasena, gen_salt('bf'))
+    WHERE numero_documento = p_numero_documento;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Usuario con número de documento % no encontrado', p_numero_documento;
+    END IF;
+END;
+$$;
+
+
+-- Crud de la tabla de Rol
+-- Insert Rol
+create procedure insert_rol(
+    p_nombre varchar(50),
+    p_descripcion text
+)
+language plpgsql
+as $$
+begin
+    insert into rol (nombre, descripcion)
+    values (p_nombre, p_descripcion);
+end;
+$$;
+
+-- Delete Rol
+
+create procedure delete_rol(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from rol where id = p_id;
+end;
+$$;
+
+
+-- Update Rol
+create procedure update_rol(
+    p_id integer,
+    p_nombre varchar(50) default null,
+    p_descripcion text default null
+)
+language plpgsql
+as $$
+begin
+    update rol
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre),
+        descripcion = coalesce(nullif(p_descripcion, ''), descripcion)
+    where id = p_id;
+end;
+$$;
+
+-- Select Rol
+create function select_rol()
+returns table (
+    id integer,
+    nombre varchar(50),
+    descripcion text
+)
+language plpgsql
+as $$
+begin
+    return query
+    select r.id, r.nombre, r.descripcion
+    from rol r;
+end;
+$$;
+
+
+
+
+
+-- Crud de tipo_identificacion
+-- Insert
+create procedure insert_tipo_identificacion(
+    p_nombre varchar(50),
+    p_descripcion text
+)
+language plpgsql
+as $$
+begin
+    insert into tipo_identificacion (nombre, descripcion)
+    values (p_nombre, p_descripcion);
+end;
+$$;
+
+-- Delete
+create procedure delete_tipo_identificacion(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from tipo_identificacion
+    where id = p_id;
+end;
+$$;
+
+-- Update
+create procedure update_tipo_identificacion(
+    p_id integer,
+    p_nombre varchar(50) default null,
+    p_descripcion text default null
+)
+language plpgsql
+as $$
+begin
+    update tipo_identificacion
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre),
+        descripcion = coalesce(nullif(p_descripcion, ''), descripcion)
+    where id = p_id;
+end;
+$$;
+
+-- Select
+create function select_tipo_identificacion()
+returns table (
+    id integer,
+    nombre varchar(50),
+    descripcion text
+)
+language plpgsql
+as $$
+begin
+    return query
+    select ti.id, ti.nombre, ti.descripcion
+    from tipo_identificacion ti;
+end;
+$$;
+
+
+
+
+-- Crud de moneda
+-- Insert
+create procedure insert_moneda(
+    p_nombre varchar(50),
+    p_iso varchar(10)
+)
+language plpgsql
+as $$
+begin
+    insert into moneda (nombre, iso)
+    values (p_nombre, p_iso);
+end;
+$$;
+
+-- Delete
+create procedure delete_moneda(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from moneda
+    where id = p_id;
+end;
+$$;
+
+-- Update
+create procedure update_moneda(
+    p_id integer,
+    p_nombre varchar(50) default null,
+    p_iso varchar(10) default null
+)
+language plpgsql
+as $$
+begin
+    update moneda
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre),
+        iso = coalesce(nullif(p_iso, ''), iso)
+    where id = p_id;
+end;
+$$;
+
+-- Select
+create function select_moneda()
+returns table (
+    id integer,
+    nombre varchar(50),
+    iso varchar(10)
+)
+language plpgsql
+as $$
+begin
+    return query
+    select m.id, m.nombre, m.iso
+    from moneda m
+    order by m.id;
+end;
+$$;
+
+
+
+
+--CREATE EXTENSION IF NOT EXISTS pgcrypto;
+CREATE OR REPLACE PROCEDURE insert_usuario(
+    p_numero_documento INT,
+    p_tipo_identificacion INT,
+    p_nombre VARCHAR(50),
+    p_apellido1 VARCHAR(50),
+    p_apellido2 VARCHAR(50),
+    p_username VARCHAR(50),
+    p_fecha_nacimiento DATE,
+    p_correo VARCHAR(100),
+    p_telefono VARCHAR(25),
+    p_contrasena VARCHAR(255),
+    p_rol INT
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO usuario (
+        numero_documento, tipo_identificacion, nombre, apellido1, apellido2,
+        username, fecha_nacimiento, correo, telefono, contrasena, rol
+    )
+    VALUES (
+        p_numero_documento, p_tipo_identificacion, p_nombre, p_apellido1, p_apellido2,
+        p_username, p_fecha_nacimiento, p_correo, p_telefono,
+        crypt(p_contrasena, gen_salt('bf')), 
+        p_rol
+    );
+END;
+$$;
+
+-- delete 
+create procedure delete_usuario(
+    p_numero_documento int
+)
+language plpgsql
+as $$
+begin
+    delete from usuario
+    where numero_documento = p_numero_documento;
+end;
+$$;
+
+
+CREATE OR REPLACE PROCEDURE update_usuario(
+  p_numero_documento INT,
+  p_nombre VARCHAR(50),
+  p_apellido1 VARCHAR(50),
+  p_correo VARCHAR(100),
+  p_telefono VARCHAR(25)
+)
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE usuario
+  SET nombre = COALESCE(p_nombre, nombre),
+      apellido1 = COALESCE(p_apellido1, apellido1),
+      correo = COALESCE(p_correo, correo),
+      telefono = COALESCE(p_telefono, telefono)
+  WHERE numero_documento = p_numero_documento;
+
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'Usuario con número de documento % no encontrado', p_numero_documento;
+  END IF;
+END;
+$$;
+
+
+
+
+
+
+-- Crud tipo de cuenta
+-- insert
+create procedure insert_tipo_cuenta(
+    p_nombre varchar(50)
+)
+language plpgsql
+as $$
+begin
+    insert into tipo_cuenta (nombre)
+    values (p_nombre);
+end;
+$$;
+
+-- delete 
+create procedure delete_tipo_cuenta(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from tipo_cuenta
+    where id = p_id;
+end;
+$$;
+
+-- update 
+create procedure update_tipo_cuenta(
+    p_id integer,
+    p_nombre varchar(50) default null
+)
+language plpgsql
+as $$
+begin
+    update tipo_cuenta
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre)
+    where id = p_id;
+end;
+$$;
+
+-- Select 
+create function select_tipo_cuenta()
+returns table (
+    id integer,
+    nombre varchar(50)
+)
+language plpgsql
+as $$
+begin
+    return query
+    select tc.id, tc.nombre
+    from tipo_cuenta tc
+    order by tc.id;
+end;
+$$;
+
+
+
+
+
+--CRUD de estado_cuenta
+-- insert
+create procedure insert_estado_cuenta(
+    p_nombre varchar(50)
+)
+language plpgsql
+as $$
+begin
+    insert into estado_cuenta (nombre)
+    values (p_nombre);
+end;
+$$;
+
+-- delete 
+create procedure delete_estado_cuenta(
+    p_id integer
+)
+language plpgsql
+as $$
+begin
+    delete from estado_cuenta
+    where id = p_id;
+end;
+$$;
+
+-- update 
+create procedure update_estado_cuenta(
+    p_id integer,
+    p_nombre varchar(50) default null
+)
+language plpgsql
+as $$
+begin
+    update estado_cuenta
+    set 
+        nombre = coalesce(nullif(p_nombre, ''), nombre)
+    where id = p_id;
+end;
+$$;
+
+-- Select 
+create function select_estado_cuenta()
+returns table (
+    id integer,
+    nombre varchar(50)
+)
+language plpgsql
+as $$
+begin
+    return query
+    select ec.id, ec.nombre
+    from estado_cuenta ec
+    order by ec.id;
+end;
+$$;
+
 

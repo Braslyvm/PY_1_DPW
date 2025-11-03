@@ -17,7 +17,7 @@ const pool = new Pool({
 });
 
 
-pool.on("connect", () => console.log("✅ Conectado a PostgreSQL"));
+pool.on("connect", () => console.log(" Conectado a PostgreSQL"));
 
 const app = express();
 app.use(express.json());
@@ -368,16 +368,10 @@ app.post("/api/v1/bank/validate-account", verifyToken, async (req, res) => {
 
 
 
-// ======================================================
-// ================== ERROR 404 ==========================
-// ======================================================
 app.use((req, res) => {
   res.status(404).json({ mensaje: "Ruta no encontrada" });
 });
 
-// ======================================================
-// ================== INICIAR SERVIDOR ===================
-// ======================================================
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
