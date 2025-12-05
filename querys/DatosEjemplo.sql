@@ -65,12 +65,13 @@ CALL insert_usuario(
 CALL insert_cuenta(
   NULL,         -- p_account_id → que el SP genere el IBAN CR01B07XXXXXXXXXXXX
   115470822,    -- p_usuario_documento
-  1,            -- p_tipo
+  3,            -- p_tipo
   1,            -- p_moneda
   1050000.50,   -- p_saldo
   1             -- p_estado
 );
 
+select * from cuenta;
 
 -- Cuenta en dólares (Corriente)
 INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)

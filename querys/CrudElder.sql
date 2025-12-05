@@ -155,41 +155,84 @@ END;
 $$;
 -- Insertar cuenta
 
-CREATE OR REPLACE PROCEDURE insert_cuenta(
-    p_account_id       VARCHAR(30),   -- puede venir NULL
+ALTER TABLE cuenta
+ADD COLUMN permite_debito  BOOLEAN DEFAULT TRUE,
+ADD COLUMN permite_credito BOOLEAN DEFAULT TRUE;
+ CREATE OR REPLACE PROCEDURE insert_cuenta(
+    p_account_id        VARCHAR(30),
     p_usuario_documento INT,
     p_tipo              INT,
     p_moneda            INT,
-    p_saldo             NUMERIC(18,2) DEFAULT 0,
-    p_estado            INT DEFAULT 1
+    p_saldo             NUMERIC(18,2) DEFAULT 0
 )
 LANGUAGE plpgsql
 AS $$
 DECLARE
-    v_account_id VARCHAR(30);
+    v_account_id       VARCHAR(30);
+    v_estado           INT := 1; -- 1 = ACTIVA
+    v_tipo_nombre      VARCHAR(50);
+    v_permite_debito   BOOLEAN;
+    v_permite_credito  BOOLEAN;
 BEGIN
     IF COALESCE(p_saldo, 0) < 0 THEN
         RAISE EXCEPTION 'El saldo inicial no puede ser negativo';
     END IF;
 
-    -- 1) Si no viene IBAN, lo generamos
+    -- 1) Generar o validar IBAN
     IF p_account_id IS NULL OR p_account_id = '' THEN
         v_account_id := fn_generate_iban_b07();
     ELSE
-        -- 2) Si viene, validamos formato del proyecto para B07
         IF p_account_id !~ '^CR01B07[0-9]{12}$' THEN
             RAISE EXCEPTION 'El IBAN % no cumple el formato CR01B07XXXXXXXXXXXX', p_account_id;
         END IF;
         v_account_id := p_account_id;
     END IF;
 
-    -- 3) Insertar cuenta
-    INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
-    VALUES (v_account_id, p_usuario_documento, p_tipo, p_moneda, COALESCE(p_saldo,0), p_estado);
+    -- 2) Obtener nombre del tipo de cuenta
+    SELECT nombre
+    INTO v_tipo_nombre
+    FROM tipo_cuenta
+    WHERE id = p_tipo;
+
+    IF NOT FOUND THEN
+        RAISE EXCEPTION 'Tipo de cuenta % no existe', p_tipo;
+    END IF;
+
+    -- 3) Reglas de débito/crédito según el nombre
+    IF v_tipo_nombre ILIKE '%corriente%' THEN
+        v_permite_debito  := TRUE;
+        v_permite_credito := TRUE;
+    ELSIF v_tipo_nombre ILIKE '%credito%' OR v_tipo_nombre ILIKE '%crédito%' THEN
+        v_permite_debito  := TRUE;
+        v_permite_credito := FALSE;
+    ELSE
+        v_permite_debito  := TRUE;
+        v_permite_credito := TRUE;
+    END IF;
+
+    -- 4) Insertar cuenta
+    INSERT INTO cuenta (
+        account_id,
+        usuario_documento,
+        tipo,
+        moneda,
+        saldo,
+        estado,
+        permite_debito,
+        permite_credito
+    )
+    VALUES (
+        v_account_id,
+        p_usuario_documento,
+        p_tipo,
+        p_moneda,
+        COALESCE(p_saldo, 0),
+        v_estado,
+        v_permite_debito,
+        v_permite_credito
+    );
 END;
 $$;
-
-
 
 
 
@@ -772,49 +815,62 @@ BEGIN
 END;
 $$;
 
-
--- Verifica si una cuenta existe y devuelve datos básicos del titular.
 DROP FUNCTION IF EXISTS sp_bank_validate_account(VARCHAR);
+
 CREATE OR REPLACE FUNCTION sp_bank_validate_account(
-    p_iban VARCHAR(30)        
+    p_iban VARCHAR(30)
 )
 RETURNS TABLE (
     existe           BOOLEAN,
     nombre           TEXT,
     identificacion   TEXT,
-    moneda           TEXT,        -- <- TEXT
+    moneda           TEXT,
     permite_debito   BOOLEAN,
     permite_credito  BOOLEAN
 )
+LANGUAGE plpgsql
 AS $$
 BEGIN
-
+    -- 1) Intentamos encontrar la cuenta por IBAN
     RETURN QUERY
     SELECT
         TRUE AS existe,
         (u.nombre || ' ' || u.apellido1 || ' ' || u.apellido2) AS nombre,
         u.numero_documento::TEXT AS identificacion,
-        m.iso::TEXT AS moneda,        
-        (c.estado = 1) AS permite_debito,
-        (c.estado = 1) AS permite_credito
+        m.iso::TEXT AS moneda,
+
+        -- ===== LÓGICA POR TIPO DE CUENTA =====
+        CASE 
+            WHEN c.tipo = 2 THEN TRUE        
+            WHEN c.tipo = 3 THEN TRUE        
+            ELSE TRUE                        
+        END AS permite_debito,
+
+        CASE 
+            WHEN c.tipo = 2 THEN TRUE        
+            WHEN c.tipo = 3 THEN FALSE       
+            ELSE TRUE                        
+        END AS permite_credito
+
     FROM cuenta c
     JOIN usuario u ON u.numero_documento = c.usuario_documento
     JOIN moneda  m ON m.id = c.moneda
-    WHERE c.account_id = p_iban;
+    WHERE c.account_id = p_iban;  
 
-    
+
     IF NOT FOUND THEN
         RETURN QUERY
         SELECT
-            FALSE AS existe,
-            NULL::TEXT AS nombre,
-            NULL::TEXT AS identificacion,
-            NULL::TEXT AS moneda,
-            FALSE AS permite_debito,
-            FALSE AS permite_credito;
+            FALSE         AS existe,
+            NULL::TEXT    AS nombre,
+            NULL::TEXT    AS identificacion,
+            NULL::TEXT    AS moneda,
+            FALSE         AS permite_debito,
+            FALSE         AS permite_credito;
     END IF;
 END;
-$$ LANGUAGE plpgsql;
+$$;
+
 
 
 
@@ -1101,6 +1157,8 @@ $$;
 
 -- Crud tipo de cuenta
 -- insert
+
+
 create procedure insert_tipo_cuenta(
     p_nombre varchar(50)
 )

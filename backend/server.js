@@ -233,9 +233,9 @@ app.delete("/api/v1/users/:id", verifyToken, async (req, res) => {
 
 //Crea cuenta
 app.post("/api/v1/accounts", verifyToken, async (req, res) => {
-  const { account_id, tipo, moneda, saldo, estado } = req.body;
+  const { account_id, tipo, moneda, saldo } = req.body;
   try {
-    await pool.query("CALL insert_cuenta($1,$2,$3,$4,$5,$6)", [account_id, req.user.userId, tipo, moneda, saldo, estado]);
+    await pool.query("CALL insert_cuenta($1,$2,$3,$4,$5)", [account_id, req.user.userId, tipo, moneda, saldo]);
     res.status(201).json({ mensaje: "Cuenta creada correctamente" });
   } catch (err) {
     console.error(err);
@@ -362,6 +362,7 @@ app.post("/api/v1/cards/:cardId/view-details", verifyToken, async (req, res) => 
   res.json({ mensaje: "Acceso temporal concedido" });
 });
 
+
 // ========== 6. VALIDAR CUENTA ==========
 app.post("/api/v1/bank/validate-account", async (req, res) => {
   console.log(">>> Entró a /api/v1/bank/validate-account");
@@ -386,29 +387,29 @@ app.post("/api/v1/bank/validate-account", async (req, res) => {
         error: "UNAUTHORIZED",
         message: "Token inválido en X-API-TOKEN",
       });
-    }// 2) Validar body { iban }
-const { iban } = req.body || {};
+    }
 
-if (!iban) {
-  return res.status(400).json({
-    error: "INVALID_ACCOUNT_FORMAT",
-    message: "El campo 'iban' es obligatorio.",
-  });
-}
+    // 2) Validar body { iban }
+    const { iban } = req.body || {};
 
-// Normalizamos (sin espacios ni guiones)
-const normalized = iban.replace(/[\s-]/g, "");
+    if (!iban) {
+      return res.status(400).json({
+        error: "INVALID_ACCOUNT_FORMAT",
+        message: "El campo 'iban' es obligatorio.",
+      });
+    }
 
-// Validar formato IBAN del proyecto
-if (!isValidCostaRicaIban(normalized)) {
-  return res.status(400).json({
-    error: "INVALID_ACCOUNT_FORMAT",
-    message: "El formato del iban no es válido.",
-  });
-}
+    // Normalizamos: sin espacios / guiones y en mayúsculas
+    const normalized = iban.replace(/[\s-]/g, "").toUpperCase();
 
+    if (!isValidCostaRicaIban(normalized)) {
+      return res.status(400).json({
+        error: "INVALID_ACCOUNT_FORMAT",
+        message: "El formato del iban no es válido.",
+      });
+    }
 
-    // Extraer código de banco: CR01 B0X NNNNNNNNNNNN
+    // Extraer código de banco CR01B0X............
     const match = /^CR01B0([1-8])[0-9]{12}$/.exec(normalized);
     const bancoDestino = match ? match[1] : null; // "1".."8"
 
@@ -423,10 +424,9 @@ if (!isValidCostaRicaIban(normalized)) {
     // 3) Consultar la BD SOLO si es B07
     const { rows } = await pool.query(
       "SELECT * FROM sp_bank_validate_account($1)",
-      [normalized] 
+      [normalized] // usamos el IBAN normalizado
     );
 
-    // Si no hay filas o existe = false → exists = false, info = null
     if (!rows.length || !rows[0].existe) {
       return res.status(200).json({
         exists: false,
@@ -442,7 +442,7 @@ if (!isValidCostaRicaIban(normalized)) {
       info: {
         name: cuenta.nombre,
         identification: cuenta.identificacion,
-        currency: cuenta.moneda, // "CRC" o "USD"
+        currency: cuenta.moneda,
         debit: cuenta.permite_debito,
         credit: cuenta.permite_credito,
       },
