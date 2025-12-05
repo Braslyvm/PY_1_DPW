@@ -574,8 +574,9 @@ function sendTransferIntent(payload) {
   });
 }
 function waitForTransferResult(id) {
+  console.log("Esperando resultado para TX:", id);
   return new Promise((resolve) => {
-
+    console.log("Registrando promesa pendiente para TX:", id);
     pendingTransfers.set(id, { resolve });
   });
 }
@@ -765,7 +766,14 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
     console.log("🌐 Iniciando transferencia interbancaria TX:", txId);
 
     const waitResult = waitForTransferResult(txId);
-
+     console.log("Enviando intención de transferencia al Banco Central:", {
+      id: txId,
+      from: fromNorm,
+      to: toNorm,
+      amount: monto,
+      currency: currency.toUpperCase(),
+      description: description || null,
+    });
     sendTransferIntent({
       id: txId,
       from: fromNorm,
@@ -774,6 +782,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       currency: currency.toUpperCase(),
       description: description || null,
     });
+
 
     const result = await waitResult;
     console.log("✅ Resultado TX", txId, "=>", result);
@@ -817,6 +826,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
     });
   } catch (err) {
     console.error("❌ Error en /api/v1/transfers/interbank:", err);
+    console.log(err.stack);
     return res.status(500).json({
       mensaje: "Error interno procesando transferencia interbancaria",
     });
