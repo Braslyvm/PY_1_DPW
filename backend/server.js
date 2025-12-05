@@ -233,9 +233,9 @@ app.delete("/api/v1/users/:id", verifyToken, async (req, res) => {
 
 //Crea cuenta
 app.post("/api/v1/accounts", verifyToken, async (req, res) => {
-  const { account_id, tipo, moneda, saldo } = req.body;
+  const {tipo, moneda, saldo } = req.body;
   try {
-    await pool.query("CALL insert_cuenta($1,$2,$3,$4,$5)", [account_id, req.user.userId, tipo, moneda, saldo]);
+    await pool.query("CALL insert_cuenta($1,$2,$3,$4,$5)", [null, req.user.userId, tipo, moneda, saldo]);
     res.status(201).json({ mensaje: "Cuenta creada correctamente" });
   } catch (err) {
     console.error(err);
@@ -354,10 +354,7 @@ app.post("/api/v1/cards/:cardId/otp", verifyToken, async (req, res) => {
 });
 
 // Ver detalles tras OTP
-app.post("/api/v1/cards/:cardId/view-details", verifyToken, async (req, res) => {
-  const { codigo } = req.body;
-  const verif = await pool.query("SELECT sp_otp_consume($1,$2,$3) AS valido", [req.user.userId, codigo, 'view_cvv']);
-  if (!verif.rows[0].valido)
+app.post("/api/v1/cards/:cardId/v
     return res.status(400).json({ mensaje: "OTP inválido" });
   res.json({ mensaje: "Acceso temporal concedido" });
 });
@@ -399,7 +396,7 @@ app.post("/api/v1/bank/validate-account", async (req, res) => {
       });
     }
 
-    // Normalizamos: sin espacios / guiones y en mayúsculas
+
     const normalized = iban.replace(/[\s-]/g, "").toUpperCase();
 
     if (!isValidCostaRicaIban(normalized)) {
@@ -409,22 +406,22 @@ app.post("/api/v1/bank/validate-account", async (req, res) => {
       });
     }
 
-    // Extraer código de banco CR01B0X............
+
     const match = /^CR01B0([1-8])[0-9]{12}$/.exec(normalized);
     const bancoDestino = match ? match[1] : null; // "1".."8"
 
     if (bancoDestino !== "7") {
-      // IBAN válido pero NO pertenece a Banco NSFM
+
       return res.status(200).json({
         exists: false,
         info: null,
       });
     }
 
-    // 3) Consultar la BD SOLO si es B07
+
     const { rows } = await pool.query(
       "SELECT * FROM sp_bank_validate_account($1)",
-      [normalized] // usamos el IBAN normalizado
+      [normalized] 
     );
 
     if (!rows.length || !rows[0].existe) {
@@ -436,7 +433,7 @@ app.post("/api/v1/bank/validate-account", async (req, res) => {
 
     const cuenta = rows[0];
 
-    // 4) Respuesta estándar de éxito (contrato del proyecto)
+   
     return res.status(200).json({
       exists: true,
       info: {
