@@ -1,79 +1,88 @@
 import React, { useEffect, useState } from "react";
 import Swal from "sweetalert2";
+import { apiFetch } from "../config/Conectar";
 
 type Cuenta = {
   account_id: string;
   alias: string;
   tipo: string;
-  moneda: "CRC" | "USD";
+  moneda: "CRC" | "USD" | string;
   saldo: number;
 };
 
-type Tarjeta = {
+type TarjetaExistente = {
   card_id: string;
-  tipo: "Gold" | "Platinum" | "Black" | "NORMAL";
-  numero: string;
-  numeroEnmascarado: string;
-  exp: string;
-  pin: string;
-  cvv: string;
-  titular: string;
-  moneda: "CRC" | "USD";
-  limite: number;
-  saldo: number;
-  cuentaAsignada: string;
+  cuentaAsignada: string; 
 };
 
 interface SolicitudTarjetaProps {
   setActiveTab: (tab: string) => void;
-  username: string;
+  username: string; 
 }
 
 const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
   setActiveTab,
-  username,
 }) => {
   const nombreTitular = localStorage.getItem("nombreCompleto") || "Titular";
 
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
-  const [tarjetas, setTarjetas] = useState<Tarjeta[]>([]);
+  const [tarjetasExistentes, setTarjetasExistentes] = useState<TarjetaExistente[]>([]);
   const [filtroTipo, setFiltroTipo] = useState<string>("");
   const [cuentaSeleccionada, setCuentaSeleccionada] = useState<string>("");
-  const [tipoTarjeta, setTipoTarjeta] = useState<
-    "Gold" | "Platinum" | "Black" | "NORMAL" | ""
-  >("");
+  const [tipoTarjeta, setTipoTarjeta] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(true);
 
-  // Cargar cuentas y tarjetas desde API o localStorage
   useEffect(() => {
-    if (!username) return;
+    const cargarDatos = async () => {
+      try {
+        setLoading(true);
+        const cuentasApi = await apiFetch<any[]>("/api/v1/accounts", {
+          method: "GET",
+          auth: true,
+        });
 
-    fetch(
-      `https://py1dpw-production.up.railway.app/api/usuarios/${username}/cuentas`
-    )
-      .then((res) => res.json())
-      .then((data) => setCuentas(data || []))
-      .catch(() => {
-        const local = JSON.parse(localStorage.getItem("cuentas") || "[]");
-        setCuentas(local);
-      });
+        const cuentasNormalizadas: Cuenta[] = cuentasApi.map((c) => ({
+          account_id: c.account_id,
+          alias: c.alias || c.account_id,
+          tipo: c.tipo,
+          moneda:
+            typeof c.moneda === "string"
+              ? c.moneda
+              : c.moneda === 1
+              ? "CRC"
+              : "USD",
+          saldo: Number(c.saldo) || 0,
+        }));
 
-    fetch(
-      `https://py1dpw-production.up.railway.app/api/usuarios/${username}/tarjetas`
-    )
-      .then((res) => res.json())
-      .then((data) => setTarjetas(data || []))
-      .catch(() => {
-        const localT = JSON.parse(localStorage.getItem("tarjetas") || "[]");
-        setTarjetas(localT);
-      });
-  }, [username]);
+        setCuentas(cuentasNormalizadas);
+        const tarjetasApi = await apiFetch<any[]>("/api/v1/cards", {
+          method: "GET",
+          auth: true,
+        });
 
-  // Filtrar cuentas que no tengan tarjeta asignada
-  const cuentasSinTarjeta = cuentas.filter((c) => {
-    return !tarjetas.some((t) => t.cuentaAsignada === c.account_id);
-  });
+        const tarjetasNorm: TarjetaExistente[] = tarjetasApi.map((t) => ({
+          card_id: t.card_id,
+          cuentaAsignada: t.cuenta_id, 
+        }));
 
-  // Generar número de tarjeta 16 dígitos
+        setTarjetasExistentes(tarjetasNorm);
+      } catch (err) {
+        console.error("Error cargando cuentas/tarjetas:", err);
+        Swal.fire(
+          "Error",
+          "No se pudieron cargar las cuentas o tarjetas.",
+          "error"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarDatos();
+  }, []);
+  const cuentasSinTarjeta = cuentas.filter(
+    (c) => !tarjetasExistentes.some((t) => t.cuentaAsignada === c.account_id)
+  );
   const generar16 = () => {
     const parts = [];
     for (let i = 0; i < 4; i++) {
@@ -99,21 +108,38 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
   const generarPIN = () => Math.floor(1000 + Math.random() * 9000).toString();
   const generarCVV = () => Math.floor(100 + Math.random() * 900).toString();
 
-  // Limite por tipo de tarjeta
-  const limitePorTipo = (tipo: Tarjeta["tipo"], cuenta: Cuenta) => {
+  const limitePorTipo = (tipoId: number, cuenta: Cuenta) => {
     if (cuenta.tipo === "Ahorro" || cuenta.tipo === "Corriente") {
       return Math.round(cuenta.saldo * 100) / 100;
     }
-    switch (tipo) {
-      case "Gold":
+    switch (tipoId) {
+      case 1:
         return 5000;
-      case "Platinum":
+      case 2: 
         return 10000;
-      case "Black":
+      case 3:
         return 20000;
       default:
         return 1000;
     }
+  };
+
+  const getTipoLabel = (id: number) => {
+    switch (id) {
+      case 1:
+        return "Gold";
+      case 2:
+        return "Platinum";
+      case 3:
+        return "Black";
+      default:
+        return "Desconocido";
+    }
+  };
+
+  const getMonedaIdFromIso = (iso: string): number => {
+    if (iso === "USD") return 2;
+    return 1; 
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -134,31 +160,24 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
       return;
     }
 
+    const tipoTarjetaId = parseInt(tipoTarjeta, 10); 
     const numero16 = generar16();
-    const tarjeta: Tarjeta = {
-      card_id: `CARD-${Date.now()}`,
-      tipo: tipoTarjeta as Tarjeta["tipo"],
-      numero: numero16,
-      numeroEnmascarado: formatearEnmascarado(numero16),
-      exp: generarExp(4),
-      pin: generarPIN(),
-      cvv: generarCVV(),
-      titular: nombreTitular,
-      moneda: cuenta.moneda,
-      limite: limitePorTipo(tipoTarjeta as Tarjeta["tipo"], cuenta),
-      saldo: 0,
-      cuentaAsignada: cuenta.account_id,
-    };
+    const numeroEnmascarado = formatearEnmascarado(numero16);
+    const exp = generarExp(4);
+    const pin = generarPIN();
+    const cvv = generarCVV();
+    const limite = limitePorTipo(tipoTarjetaId, cuenta);
+    const monedaId = getMonedaIdFromIso(cuenta.moneda);
 
     const confirm = await Swal.fire({
       title: "Confirmar creación de tarjeta",
       html: `
         <p><b>Cuenta:</b> ${cuenta.alias} (${cuenta.account_id})</p>
-        <p><b>Tipo tarjeta:</b> ${tarjeta.tipo}</p>
-        <p><b>Número (visible):</b> ${tarjeta.numeroEnmascarado}</p>
-        <p><b>Exp:</b> ${tarjeta.exp}</p>
-        <p><b>Moneda:</b> ${tarjeta.moneda}</p>
-        <p><b>Límite:</b> ${tarjeta.limite.toLocaleString()}</p>
+        <p><b>Tipo tarjeta:</b> ${getTipoLabel(tipoTarjetaId)}</p>
+        <p><b>Número (visible):</b> ${numeroEnmascarado}</p>
+        <p><b>Exp:</b> ${exp}</p>
+        <p><b>Moneda:</b> ${cuenta.moneda}</p>
+        <p><b>Límite:</b> ${limite.toLocaleString()}</p>
       `,
       icon: "question",
       showCancelButton: true,
@@ -168,29 +187,54 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
 
     if (!confirm.isConfirmed) return;
 
-    // Guardar localmente (simulación)
-    const localT: Tarjeta[] = JSON.parse(
-      localStorage.getItem("tarjetas") || "[]"
-    );
-    localT.push(tarjeta);
-    localStorage.setItem("tarjetas", JSON.stringify(localT));
+    try {
+      await apiFetch("/api/v1/cards", {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({
+          card_id: `CARD-${Date.now()}`,
+          cuenta_id: cuenta.account_id,
+          tipo: tipoTarjetaId,
+          numero_tarjeta: numero16,
+          exp,
+          moneda: monedaId, 
+          limite,
+        }),
+      });
 
-    await Swal.fire({
-      title: "Tarjeta creada ✅",
-      html: `
-        <p><b>Número enmascarado:</b> ${tarjeta.numeroEnmascarado}</p>
-        <p><b>Exp:</b> ${tarjeta.exp}</p>
-        <p><b>PIN:</b> ${tarjeta.pin}</p>
-        <p><b>CVV:</b> ${tarjeta.cvv}</p>
-        <p><b>Moneda:</b> ${tarjeta.moneda}</p>
-        <p><b>Límite:</b> ${tarjeta.limite.toLocaleString()}</p>
-      `,
-      icon: "success",
-      confirmButtonText: "Aceptar",
-    });
+      await Swal.fire({
+        title: "Tarjeta creada ✅",
+        html: `
+          <p><b>Titular:</b> ${nombreTitular}</p>
+          <p><b>Número enmascarado:</b> ${numeroEnmascarado}</p>
+          <p><b>Exp:</b> ${exp}</p>
+          <p><b>PIN:</b> ${pin}</p>
+          <p><b>CVV:</b> ${cvv}</p>
+          <p><b>Moneda:</b> ${cuenta.moneda}</p>
+          <p><b>Límite:</b> ${limite.toLocaleString()}</p>
+        `,
+        icon: "success",
+        confirmButtonText: "Aceptar",
+      });
 
-    setActiveTab("tarjetas");
+      setActiveTab("tarjetas");
+    } catch (err: any) {
+      console.error("Error creando tarjeta:", err);
+      Swal.fire(
+        "Error",
+        err.message || "No se pudo crear la tarjeta.",
+        "error"
+      );
+    }
   };
+
+  if (loading) {
+    return (
+      <section className="contenedor_main">
+        <h2>Cargando información...</h2>
+      </section>
+    );
+  }
 
   return (
     <section className="contenedor_main">
@@ -208,7 +252,6 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
                 onChange={(e) => setFiltroTipo(e.target.value)}
               >
                 <option value="">Todas</option>
-                <option value="Ahorro">Ahorro</option>
                 <option value="Corriente">Corriente</option>
                 <option value="Credito">Crédito</option>
               </select>
@@ -238,13 +281,12 @@ const SolicitudTarjeta: React.FC<SolicitudTarjetaProps> = ({
               <select
                 required
                 value={tipoTarjeta}
-                onChange={(e) => setTipoTarjeta(e.target.value as any)}
+                onChange={(e) => setTipoTarjeta(e.target.value)}
               >
                 <option value="">Seleccione</option>
-                <option value="Gold">Gold</option>
-                <option value="Platinum">Platinum</option>
-                <option value="Black">Black</option>
-                <option value="NORMAL">NORMAL</option>
+                <option value="1">Gold</option>
+                <option value="2">Platinum</option>
+                <option value="3">Black</option>
               </select>
             </div>
 

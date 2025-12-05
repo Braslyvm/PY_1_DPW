@@ -1,15 +1,14 @@
 import { useState } from "react";
 import type { FC } from "react";
 import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import { apiFetch } from "../config/Conectar";
 
-// Regex para validaciones
 const usernameRegex = /^[a-z0-9._-]{4,20}$/;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
-const nacionalRegex = /^\d-\d{4}-\d{4}$/;
 const dimexRegex = /^\d{11,12}$/;
 const pasaporteRegex = /^[A-Z0-9]{6,12}$/;
-const telefonoRegex = /^\+506 \d{4}-\d{4}$/;
 
 const Registro: FC = () => {
   const navigate = useNavigate();
@@ -34,58 +33,9 @@ const Registro: FC = () => {
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
-    const target = e.target as HTMLInputElement; // casteo a HTMLInputElement
+    const target = e.target as HTMLInputElement;
     const { name, value, type, checked } = target;
     setForm({ ...form, [name]: type === "checkbox" ? checked : value });
-  };
-
-  interface UsuarioType {
-    nombreCompleto?: string;
-    username?: string;
-    tipoDocumento?: string;
-    numeroDocumento?: string;
-    fechaNacimiento?: string;
-    correo?: string;
-    telefono?: string;
-    numeroCelular?: string;
-  }
-
-  const validarExistenciaUsuario = async (usernameToCheck: string) => {
-    try {
-      const response = await fetch(
-        `https://py1dpw-production.up.railway.app/api/usuarios`
-      );
-      const usuarios = await response.json();
-
-      const conflicts: { [key: string]: string } = {};
-
-      usuarios.forEach((u: UsuarioType) => {
-        if (u.username === usernameToCheck) {
-          conflicts.username = "El username ya está en uso.";
-        }
-        if (
-          form.numeroDocumento &&
-          u.numeroDocumento === form.numeroDocumento
-        ) {
-          conflicts.numeroDocumento = "El número de documento ya está en uso.";
-        }
-        if (
-          form.telefono &&
-          (u.numeroCelular === form.telefono || u.telefono === form.telefono)
-        ) {
-          conflicts.telefono = "El número de teléfono ya está en uso.";
-        }
-        if (form.correo && u.correo === form.correo) {
-          conflicts.correo = "El correo ya está en uso.";
-        }
-      });
-
-      if (Object.keys(conflicts).length > 0) {
-        setErrors((prev) => ({ ...prev, ...conflicts }));
-      }
-    } catch (error) {
-      console.error("Error al validar existencia de usuario:", error);
-    }
   };
 
   const validate = () => {
@@ -95,12 +45,6 @@ const Registro: FC = () => {
       newErrors.tipoDocumento = "Seleccione tipo de documento.";
 
     if (
-      form.tipoDocumento === "Nacional" &&
-      !nacionalRegex.test(form.numeroDocumento)
-    )
-      newErrors.numeroDocumento =
-        "Formato inválido para Nacional (#-####-####).";
-    if (
       form.tipoDocumento === "DIMEX" &&
       !dimexRegex.test(form.numeroDocumento)
     )
@@ -109,12 +53,8 @@ const Registro: FC = () => {
       form.tipoDocumento === "Pasaporte" &&
       !pasaporteRegex.test(form.numeroDocumento)
     )
-      newErrors.numeroDocumento =
-        "Pasaporte debe tener 6–12 caracteres alfanuméricos en mayúscula.";
-
-    if (!usernameRegex.test(form.username))
-      newErrors.username =
-        "Username inválido. 4–20 caracteres, minúsculas, números, ._- permitidos.";
+    if (!form.nombreCompleto.trim())
+      newErrors.nombreCompleto = "Ingrese su nombre completo.";
 
     if (!form.fechaNacimiento) {
       newErrors.fechaNacimiento = "Ingrese su fecha de nacimiento.";
@@ -122,18 +62,15 @@ const Registro: FC = () => {
       const hoy = new Date();
       const nacimiento = new Date(form.fechaNacimiento);
       const edad = hoy.getFullYear() - nacimiento.getFullYear();
-      if (
-        edad < 18 ||
-        (edad === 18 &&
-          hoy < new Date(nacimiento.setFullYear(nacimiento.getFullYear() + 18)))
-      )
+      const cumple18 = new Date(
+        nacimiento.getFullYear() + 18,
+        nacimiento.getMonth(),
+        nacimiento.getDate()
+      );
+      if (hoy < cumple18)
         newErrors.fechaNacimiento = "Debe ser mayor de 18 años.";
     }
-
     if (!emailRegex.test(form.correo)) newErrors.correo = "Correo no válido.";
-
-    if (form.telefono && !telefonoRegex.test(form.telefono))
-      newErrors.telefono = "Teléfono inválido. Formato: +506 ####-####";
 
     if (!passwordRegex.test(form.password))
       newErrors.password =
@@ -149,6 +86,19 @@ const Registro: FC = () => {
     return Object.keys(newErrors).length === 0;
   };
 
+  const mapTipoDocumento = (tipo: string): number => {
+    switch (tipo) {
+      case "Nacional":
+        return 1;
+      case "DIMEX":
+        return 2;
+      case "Pasaporte":
+        return 3;
+      default:
+        return 0;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
@@ -156,25 +106,53 @@ const Registro: FC = () => {
     setLoading(true);
 
     try {
-      const response = await fetch(
-        "https://py1dpw-production.up.railway.app/api/registro",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(form),
-        }
-      );
-      const data = await response.json();
-      alert(data.mensaje);
+      const partesNombre = form.nombreCompleto.trim().split(/\s+/);
+      const nombre = partesNombre[0] || "";
+      const apellido1 = partesNombre[1] || "";
+      const apellido2 =
+        partesNombre.length > 2
+          ? partesNombre.slice(2).join(" ")
+          : "";
+
+      const tipo_identificacion = mapTipoDocumento(form.tipoDocumento);
+
+      const body = {
+        numero_documento: form.numeroDocumento,
+        tipo_identificacion,
+        nombre,
+        apellido1,
+        apellido2,
+        username: form.username,
+        fecha_nacimiento: form.fechaNacimiento,
+        correo: form.correo,
+        telefono: form.telefono,
+        contrasena: form.password,
+        rol: 2, 
+      };
+
+      await apiFetch("/api/v1/users", {
+        method: "POST",
+        body: JSON.stringify(body),
+      });
+
+      Swal.fire({
+        icon: "success",
+        title: "Registro exitoso",
+        text: "Su usuario ha sido creado. Ahora puede iniciar sesión.",
+      });
+
       setLoading(false);
       navigate("/login");
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
-      alert("Error al registrar usuario");
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar usuario",
+        text: error.message || "No se pudo completar el registro.",
+      });
       setLoading(false);
     }
   };
-  // helper types declared above; no Cliente class needed here
 
   return (
     <div className="login-container">
@@ -196,11 +174,6 @@ const Registro: FC = () => {
           name="username"
           value={form.username}
           onChange={handleChange}
-          onBlur={() => {
-            if (form.username && usernameRegex.test(form.username)) {
-              validarExistenciaUsuario(form.username);
-            }
-          }}
           type="text"
           placeholder="Username"
           required
