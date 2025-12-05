@@ -503,15 +503,15 @@ const centralSocket = io(CENTRAL_WS_URL, {
 const pendingTransfers = new Map();
 
 centralSocket.on("connect", () => {
-  console.log("Conectado al Banco Central. socket.id =", centralSocket.id);
+  console.log("✅ Conectado al Banco Central. socket.id =", centralSocket.id);
 });
 
-centralSocket.on("disconnect", () => {
-  console.log("Desconectado del Banco Central");
+centralSocket.on("disconnect", (reason) => {
+  console.log("⚠️ Desconectado del Banco Central. Razón:", reason);
 });
 
 centralSocket.on("connect_error", (err) => {
-  console.error("Error conectando al Banco Central:", err.message);
+  console.error("❌ Error conectando al Banco Central:", err.message);
 });
 
 centralSocket.on("message", async (msg) => {
@@ -743,7 +743,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
     }
 
     const fromNorm = from.replace(/[\s-]/g, "").toUpperCase();
-    const toNorm = to.replace(/[\s-]/g, "").toUpperCase();
+    const toNorm   = to.replace(/[\s-]/g, "").toUpperCase();
 
     if (!isValidCostaRicaIban(fromNorm) || !isValidCostaRicaIban(toNorm)) {
       return res.status(400).json({
@@ -751,6 +751,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       });
     }
 
+    // 🔹 Verificar que la cuenta origen pertenece al usuario logueado
     const cuentas = await pool.query("SELECT * FROM select_cuenta($1)", [
       req.user.userId,
     ]);
@@ -762,10 +763,22 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       });
     }
 
-    const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    // 🔹 Revisar si HAY conexión al Banco Central antes de intentar
+    if (!centralSocket.connected) {
+      console.error("No hay conexión activa con el Banco Central");
+      return res.status(503).json({
+        mensaje: "Banco Central no disponible en este momento. Intente más tarde.",
+      });
+    }
 
+    // 🔹 ID único de transacción
+    const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+    console.log("🌐 Iniciando transferencia interbancaria TX:", txId);
+
+    // Preparamos la promesa que esperará commit/reject
     const waitResult = waitForTransferResult(txId, 30000);
 
+    // Mandamos intención de transferencia al Banco Central
     sendTransferIntent({
       id: txId,
       from: fromNorm,
@@ -775,7 +788,9 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       description: description || null,
     });
 
+    // Esperamos respuesta (commit/reject) del Banco Central
     const result = await waitResult;
+    console.log("✅ Resultado TX", txId, "=>", result);
 
     if (!result.ok) {
       const reason = result.reason || "UNKNOWN";
@@ -815,10 +830,11 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       id: txId,
     });
   } catch (err) {
-    console.error("Error en /api/v1/transfers/interbank:", err);
+    console.error("❌ Error en /api/v1/transfers/interbank:", err);
     return res.status(500).json({
       mensaje: "Error interno procesando transferencia interbancaria",
     });
   }
 });
+
 //-----------------------------------------------------------------------------------------
