@@ -7,11 +7,10 @@ interface Cuenta {
   account_id: string;
   alias: string;
   tipo: string;
-  moneda: string; // "CRC" | "USD" o similar
-  saldo: number | string; // puede venir como string (numeric de Postgres)
+  moneda: string; 
+  saldo: number | string; 
 }
 
-// ahora solo 2 tipos
 type TipoTransferencia = "propia" | "interbanco";
 
 interface TransferenciaData {
@@ -19,14 +18,14 @@ interface TransferenciaData {
   origen: string;
   destino: string;
   monto: number;
-  moneda: string; // "CRC" | "USD"
-  tipo_mov?: number; // 2 = Corriente, 3 = Crédito (solo mismo banco)
+  moneda: string; 
+  tipo_mov?: number; 
   descripcion?: string;
   fecha?: string;
   titularDestino?: string;
 }
 
-// ====== Helpers ======
+
 const normalizeIban = (iban: string) =>
   iban.replace(/[\s-]/g, "").toUpperCase();
 
@@ -37,18 +36,17 @@ const isValidCostaRicaIban = (iban: string): boolean => {
   return regex.test(normalized);
 };
 
-// convertir saldo a número
 const toNumero = (valor: number | string): number => {
   if (typeof valor === "number") return valor;
   const n = parseFloat(valor);
   return isNaN(n) ? 0 : n;
 };
 
-// mapear moneda string → id numérico para interno
+
 const monedaToId = (moneda: string): number => {
   const m = moneda.toUpperCase();
   if (m === "USD") return 2;
-  return 1; // por defecto CRC = 1
+  return 1; 
 };
 
 const Transferencias: React.FC = () => {
@@ -71,7 +69,8 @@ const Transferencias: React.FC = () => {
     try {
       setLoading(true);
       setError("");
-      const data = await apiFetch<Cuenta[]>("/api/v1/accounts", {
+      // truco anti-304: query param único
+      const data = await apiFetch<Cuenta[]>(`/api/v1/accounts?_=${Date.now()}`, {
         method: "GET",
         auth: true,
       });
@@ -88,7 +87,7 @@ const Transferencias: React.FC = () => {
     cargarCuentas();
   }, []);
 
-  // ========= Manejo de cambios en el formulario =========
+
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
   ) => {
@@ -115,31 +114,30 @@ const Transferencias: React.FC = () => {
       [name]: value,
     }));
 
-    // Si cambia cuenta origen, actualizamos moneda
+ 
     if (name === "origen") {
       const cuentaOrigen = cuentas.find((c) => c.account_id === value);
       if (cuentaOrigen) {
         setForm((prev) => ({
           ...prev,
-          moneda: cuentaOrigen.moneda, // "CRC" | "USD"
+          moneda: cuentaOrigen.moneda, 
         }));
       }
     }
   };
 
-  // ========= Llamada al backend =========
+
   const realizarTransferencia = async (
     data: TransferenciaData
   ): Promise<{ mensaje: string; id?: string; reason?: string }> => {
     const fromNorm = normalizeIban(data.origen);
     const toNorm = normalizeIban(data.destino);
 
-    // Validar IBAN SOLO para interbanco
+
     if (data.tipo === "interbanco" && !isValidCostaRicaIban(toNorm)) {
       throw new Error("El IBAN destino no tiene un formato válido.");
     }
 
-    // Validar saldo
     const cuentaOrigen = cuentas.find((c) => c.account_id === data.origen);
     if (cuentaOrigen && data.monto > toNumero(cuentaOrigen.saldo)) {
       throw new Error(
@@ -153,17 +151,16 @@ const Transferencias: React.FC = () => {
       "CRC"
     ).toUpperCase();
 
-    // ====== Transferencia INTERNA (mismo banco) ======
     const esMismoBanco = data.tipo === "propia";
 
     if (esMismoBanco) {
-      const tipoMovFinal = data.tipo_mov ?? 2; // 2 = Corriente por defecto
+      const tipoMovFinal = data.tipo_mov ?? 2; o
 
       const payload = {
         origen: fromNorm,
         destino: toNorm,
-        tipo_mov: tipoMovFinal,              // 2 o 3
-        moneda: monedaToId(monedaFinalStr), // 1=CRC, 2=USD
+        tipo_mov: tipoMovFinal,
+        moneda: monedaToId(monedaFinalStr), 
         monto: data.monto,
         descripcion:
           data.descripcion || "Transferencia entre cuentas de ahorro",
@@ -182,12 +179,11 @@ const Transferencias: React.FC = () => {
       return json;
     }
 
-    // ====== Transferencia INTERBANCARIA ======
     const payloadInterbank = {
       from: fromNorm,
       to: toNorm,
       amount: data.monto,
-      currency: monedaFinalStr, // "CRC" o "USD"
+      currency: monedaFinalStr,
       description:
         data.descripcion || "Transferencia entre cuentas de ahorro",
     };
@@ -205,7 +201,6 @@ const Transferencias: React.FC = () => {
     return json;
   };
 
-  // ========= Submit + SweetAlert =========
   const handleContinuar = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -233,18 +228,20 @@ const Transferencias: React.FC = () => {
       tipo_mov: form.tipo_mov ?? 2,
     };
     setForm(nuevoForm);
+
     const textoTipo =
       nuevoForm.tipo === "propia"
         ? "Cuentas propias"
         : "Interbancaria (otro banco)";
+
     const result = await Swal.fire({
       title: "Confirmar transferencia",
       html: `
         <b>Tipo:</b> ${textoTipo}<br/>
         <b>Origen:</b> ${nuevoForm.origen}<br/>
         <b>Destino:</b> ${nuevoForm.destino}${
-        nuevoForm.titularDestino ? ` (${nuevoForm.titularDestino})` : ""
-      }<br/>
+          nuevoForm.titularDestino ? ` (${nuevoForm.titularDestino})` : ""
+        }<br/>
         <b>Monto:</b> ${nuevoForm.monto.toFixed(2)} ${nuevoForm.moneda}<br/>
         ${
           nuevoForm.tipo === "propia"
@@ -261,7 +258,9 @@ const Transferencias: React.FC = () => {
       confirmButtonText: "Confirmar",
       cancelButtonText: "Cancelar",
     });
+
     if (!result.isConfirmed) return;
+
     try {
       Swal.fire({
         title: "Procesando transferencia...",
@@ -269,8 +268,10 @@ const Transferencias: React.FC = () => {
         allowOutsideClick: false,
         showConfirmButton: false,
       });
+
       const respuesta = await realizarTransferencia(nuevoForm);
       Swal.close();
+
       await cargarCuentas();
 
       await Swal.fire({
@@ -280,8 +281,8 @@ const Transferencias: React.FC = () => {
           <b>Tipo:</b> ${textoTipo}<br/>
           <b>Origen:</b> ${nuevoForm.origen}<br/>
           <b>Destino:</b> ${nuevoForm.destino}${
-        nuevoForm.titularDestino ? ` (${nuevoForm.titularDestino})` : ""
-      }<br/>
+            nuevoForm.titularDestino ? ` (${nuevoForm.titularDestino})` : ""
+          }<br/>
           <b>Monto:</b> ${nuevoForm.monto.toFixed(2)} ${nuevoForm.moneda}<br/>
           ${
             nuevoForm.tipo === "propia"
@@ -308,6 +309,7 @@ const Transferencias: React.FC = () => {
           link.click();
         }
       });
+
       setForm({
         tipo,
         origen: "",
@@ -331,6 +333,7 @@ const Transferencias: React.FC = () => {
       });
     }
   };
+
   return (
     <section className="contenedor_main">
       <div className="registrarcuenta-form-wrapper">
@@ -360,6 +363,7 @@ const Transferencias: React.FC = () => {
                 <option value="interbanco">Interbancaria (otro banco)</option>
               </select>
             </div>
+
             <div>
               <label>Cuenta origen:</label>
               <select
@@ -376,6 +380,7 @@ const Transferencias: React.FC = () => {
                 ))}
               </select>
             </div>
+
             {tipo === "propia" ? (
               <div>
                 <label>Cuenta destino (propia):</label>
@@ -409,19 +414,21 @@ const Transferencias: React.FC = () => {
                 />
               </div>
             )}
+
             {tipo === "propia" && (
               <div>
                 <label>Tipo de movimiento (mismo banco):</label>
                 <select
                   name="tipo_mov"
-                  value={form.tipo_mov ?? 2}
+                  value={String(form.tipo_mov ?? 2)}
                   onChange={handleChange}
                 >
-                  <option value={2}>Corriente</option>
-                  <option value={3}>Crédito</option>
+                  <option value="2">Corriente</option>
+                  <option value="3">Crédito</option>
                 </select>
               </div>
             )}
+
             <div>
               <label>Moneda:</label>
               <select
@@ -435,6 +442,7 @@ const Transferencias: React.FC = () => {
                 <option value="USD">USD - Dólares</option>
               </select>
             </div>
+
             <div>
               <label>Monto:</label>
               <input
@@ -447,6 +455,7 @@ const Transferencias: React.FC = () => {
                 required
               />
             </div>
+
             <div>
               <label>Descripción (opcional):</label>
               <input
