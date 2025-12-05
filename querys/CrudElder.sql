@@ -23,6 +23,7 @@ begin
 end;
 $$;
 
+
 create procedure update_tipo_movimiento_cuenta(
     p_id integer,
     p_nombre varchar(50) default null,
