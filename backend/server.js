@@ -771,8 +771,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       from: fromNorm,
       to: toNorm,
       amount: monto,
-      currency: currency.toUpperCase(),
-      description: description || null,
+      currency: currency.toUpperCase()
     });
     sendTransferIntent({
       id: txId,
