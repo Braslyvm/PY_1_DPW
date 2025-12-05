@@ -1,80 +1,126 @@
 import React, { useState, useEffect } from "react";
 import "../style/barraProgreso.css";
+import { apiFetch } from "../config/Conectar";
 
 interface ConsultarPINProps {
-  setActiveTab: () => void;
-  cardId: string; // para saber de qué tarjeta se está recuperando el PIN
+  setActiveTab: (tab: string) => void;
+  cardId: string; 
 }
 
 const ConsultarPIN: React.FC<ConsultarPINProps> = ({
   setActiveTab,
   cardId,
 }) => {
-  // Estados del componente
+
   const [fase, setFase] = useState<
     "identificacion" | "verificacion" | "mostrarPIN"
   >("identificacion");
-  const [tipoValidacion, setTipoValidacion] = useState(""); // email o SMS
-  const [valorValidacion, setValorValidacion] = useState(""); // correo o número de teléfono
-  const [tokenGenerado, setTokenGenerado] = useState(""); // token simulado
-  const [tokenIngresado, setTokenIngresado] = useState(""); // token que ingresa el usuario
-  const [loading, setLoading] = useState(false); // estado de carga
-  const [pin, setPin] = useState(""); // PIN a mostrar
-  const [tiempoVisible, setTiempoVisible] = useState(0); // contador para ocultar PIN automáticamente
+  const [tipoValidacion, setTipoValidacion] = useState(""); 
+  const [valorValidacion, setValorValidacion] = useState(""); 
+  const [tokenGenerado, setTokenGenerado] = useState("");
+  const [tokenIngresado, setTokenIngresado] = useState(""); 
+  const [loading, setLoading] = useState(false); 
+  const [pin, setPin] = useState("");
+  const [tiempoVisible, setTiempoVisible] = useState(0); 
 
-  // Función para enviar token simulado
-  const handleEnviarToken = (e: React.FormEvent) => {
+  // Paso 1: pedir OTP al backend
+  const handleEnviarToken = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!valorValidacion) return alert("Ingrese correo o teléfono.");
-    setLoading(true);
-    setTimeout(() => {
-      const token = "1234"; // token simulado
-      setTokenGenerado(token);
+    if (!valorValidacion) {
+      alert("Ingrese correo o teléfono para continuar.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      const data = await apiFetch<{ codigo: string }>(
+        `/api/v1/cards/${cardId}/otp`,
+        {
+          method: "POST",
+          auth: true,
+        }
+      );
+
+      setTokenGenerado(data.codigo);
       setFase("verificacion");
+      alert(`OTP generado (modo demo): ${data.codigo}`);
+    } catch (err: any) {
+      console.error("Error generando OTP:", err);
+      alert(err.message || "Error al generar código de verificación.");
+    } finally {
       setLoading(false);
-      alert(`Token enviado al usuario: ${token}`);
-    }, 1000); // simulamos retardo de envío
+    }
   };
 
-  // Función para validar token ingresado
-  const handleValidarToken = (e: React.FormEvent) => {
+  const handleValidarToken = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    setTimeout(() => {
+    if (!tokenIngresado) {
+      alert("Ingrese el código recibido.");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      await apiFetch(`/api/v1/cards/${cardId}/view-details`, {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({ codigo: tokenIngresado }),
+      });
+      const nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();
+      setPin(nuevoPin);
+      setFase("mostrarPIN");
+      setTiempoVisible(8);
+    } catch (err: any) {
+      console.error("Error validando OTP:", err);
+      alert(err.message || "El código no es válido o ha expirado.");
+    } finally {
       setLoading(false);
-      if (tokenIngresado === tokenGenerado) {
-        // generar PIN aleatorio de 4 dígitos
-        const nuevoPin = Math.floor(1000 + Math.random() * 9000).toString();
-        setPin(nuevoPin);
-        setFase("mostrarPIN");
-        setTiempoVisible(8); // mostrar PIN por 8 segundos
-      } else {
-        alert("El código no es válido o ha expirado.");
-      }
-    }, 1000);
+    }
   };
 
-  // Contador para autoocultar PIN
+  const handleReenviar = async () => {
+    try {
+      setLoading(true);
+
+      const data = await apiFetch<{ codigo: string }>(
+        `/api/v1/cards/${cardId}/otp`,
+        {
+          method: "POST",
+          auth: true,
+        }
+      );
+
+      setTokenGenerado(data.codigo);
+      alert(`Nuevo código reenviado (demo): ${data.codigo}`);
+    } catch (err: any) {
+      console.error("Error reenviando OTP:", err);
+      alert(err.message || "No se pudo reenviar el código.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     let timer: ReturnType<typeof setTimeout>;
     if (fase === "mostrarPIN" && tiempoVisible > 0) {
-      timer = setTimeout(() => setTiempoVisible(tiempoVisible - 1), 1000);
+      timer = setTimeout(() => setTiempoVisible((t) => t - 1), 1000);
     } else if (fase === "mostrarPIN" && tiempoVisible === 0) {
-      setPin(""); // ocultar PIN
-      setFase("identificacion"); // resetear
+      setPin(""); 
+      setFase("identificacion"); 
       setTokenGenerado("");
       setTokenIngresado("");
       setValorValidacion("");
       setTipoValidacion("");
 
-      // Volver a detalle de tarjeta
-      setActiveTab();
+
+      setActiveTab("tarjetas");
     }
     return () => clearTimeout(timer);
   }, [tiempoVisible, fase, setActiveTab]);
 
-  // Copiar PIN al portapapeles
   const handleCopiarPIN = () => {
+    if (!pin) return;
     navigator.clipboard.writeText(pin);
     alert("PIN copiado al portapapeles");
   };
@@ -107,8 +153,6 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({
           )}
         </div>
       </header>
-
-      {/* Paso 1: Identificación */}
       {fase === "identificacion" && (
         <section aria-label="Identificación">
           <form onSubmit={handleEnviarToken}>
@@ -146,7 +190,6 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({
         </section>
       )}
 
-      {/* Paso 2: Verificación */}
       {fase === "verificacion" && (
         <section aria-label="Verificación">
           <form onSubmit={handleValidarToken}>
@@ -163,24 +206,23 @@ const ConsultarPIN: React.FC<ConsultarPINProps> = ({
               {loading ? "Validando..." : "Validar Código"}
             </button>
             <button
-              type="submit" 
-              onClick={() =>
-                alert(`Código reenviado al usuario: ${tokenGenerado}`)
-              }
+              type="button"
+              onClick={handleReenviar}
+              disabled={loading}
             >
               Reenviar Código
             </button>
           </form>
         </section>
       )}
-
-      {/* Paso 3: Mostrar PIN */}
       {fase === "mostrarPIN" && (
         <section aria-label="PIN" className="recuperarPIN-container">
-          <h2> PIN de la tarjeta:</h2>
+          <h2>PIN de la tarjeta:</h2>
           <div className="recuperarPIN-pin-container">
             <p className="recuperarPIN-pin">{pin}</p>
-            <button className="recuperarPIN-button" onClick={handleCopiarPIN}>Copiar PIN</button>
+            <button className="recuperarPIN-button" onClick={handleCopiarPIN}>
+              Copiar PIN
+            </button>
           </div>
           <p>Se ocultará automáticamente en {tiempoVisible} segundos</p>
         </section>

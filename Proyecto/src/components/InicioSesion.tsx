@@ -23,7 +23,6 @@ const InicioSesion: React.FC = () => {
         body: JSON.stringify({ username, password }),
       })
         .then((data) => {
-          console.log("Inicio de sesión exitoso:", data);
           localStorage.setItem("token", data.token);
           localStorage.setItem("rol", String(data.rol));
           localStorage.setItem("userId", String(data.userId));
