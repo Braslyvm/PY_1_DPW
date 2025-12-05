@@ -154,10 +154,10 @@ BEGIN
 END;
 $$;
 -- Insertar cuenta
-
 ALTER TABLE cuenta
 ADD COLUMN permite_debito  BOOLEAN DEFAULT TRUE,
 ADD COLUMN permite_credito BOOLEAN DEFAULT TRUE;
+
 CREATE OR REPLACE PROCEDURE insert_cuenta(
     p_usuario_documento INT,
     p_tipo              INT,
@@ -225,12 +225,6 @@ BEGIN
     );
 END;
 $$;
-
-
-
-
-
-
 
 
 

@@ -6,6 +6,7 @@ import pkg from "pg";
 import { fileURLToPath } from "url";
 import path from "path";
 import dotenv from "dotenv";
+import { io } from "socket.io-client";
 
 
 dotenv.config(); 
@@ -479,3 +480,345 @@ const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(` Servidor corriendo en http://localhost:${PORT}`);
 });
+
+
+
+
+//-----------------------------------------------------------------------------------------
+//----------------------WEB SOCKETS (POR IMPLEMENTAR)---------------------------------
+//-----------------------------------------------------------------------------------------
+// =================== BANCO CENTRAL (WebSocket) ===================
+
+const CENTRAL_WS_URL = process.env.CENTRAL_WS_URL || "http://137.184.36.3:6000";
+
+const centralSocket = io(CENTRAL_WS_URL, {
+  transports: ["websocket"],
+  auth: {
+    bankId: process.env.BANK_ID || "B07",
+    bankName: process.env.BANK_NAME || "Banco NSFM",
+    token: process.env.BANK_CENTRAL_TOKEN || "BANK-CENTRAL-IC8057-2025",
+  },
+});
+
+const pendingTransfers = new Map();
+
+centralSocket.on("connect", () => {
+  console.log("Conectado al Banco Central. socket.id =", centralSocket.id);
+});
+
+centralSocket.on("disconnect", () => {
+  console.log("Desconectado del Banco Central");
+});
+
+centralSocket.on("connect_error", (err) => {
+  console.error("Error conectando al Banco Central:", err.message);
+});
+
+centralSocket.on("message", async (msg) => {
+  const { type, data } = msg || {};
+  console.log("WS recibido:", type, data);
+
+  try {
+    switch (type) {
+      case "transfer.reserve":
+        await handleTransferReserve(data);
+        break;
+
+      case "transfer.credit":
+        await handleTransferCredit(data);
+        break;
+
+      case "transfer.debit":
+        await handleTransferDebit(data);
+        break;
+
+      case "transfer.rollback":
+        await handleTransferRollback(data);
+        break;
+
+      case "transfer.commit":
+        resolveTransferPromise(data.id, { ok: true });
+        break;
+
+      case "transfer.reject":
+        resolveTransferPromise(data.id, {
+          ok: false,
+          reason: data.reason,
+        });
+        break;
+
+      case "transfer.init":
+        console.log("transfer.init:", data);
+        break;
+
+      default:
+        console.log("Tipo de mensaje no manejado:", type);
+    }
+  } catch (err) {
+    console.error("Error manejando mensaje WS:", err);
+  }
+});
+
+function resolveTransferPromise(id, payload) {
+  const entry = pendingTransfers.get(id);
+  if (entry) {
+    entry.resolve(payload);
+    clearTimeout(entry.timeoutId);
+    pendingTransfers.delete(id);
+  }
+}
+
+function sendTransferIntent(payload) {
+  if (!centralSocket.connected) {
+    throw new Error("No hay conexión con el Banco Central");
+  }
+
+  centralSocket.emit("message", {
+    type: "transfer.intent",
+    data: payload,
+  });
+}
+
+function waitForTransferResult(id, timeoutMs = 30000) {
+  return new Promise((resolve) => {
+    const timeoutId = setTimeout(() => {
+      pendingTransfers.delete(id);
+      resolve({ ok: false, reason: "TIMEOUT" });
+    }, timeoutMs);
+
+    pendingTransfers.set(id, { resolve, timeoutId });
+  });
+}
+
+// =================== HANDLERS DE EVENTOS (lado banco) ===================
+
+async function handleTransferReserve(data) {
+  const { id, from, amount } = data;
+
+  try {
+    const { rows } = await pool.query(
+      "SELECT saldo, moneda, permite_debito FROM cuenta WHERE account_id = $1",
+      [from]
+    );
+
+    if (!rows.length) {
+      return centralSocket.emit("message", {
+        type: "transfer.reserve.result",
+        data: { id, ok: false, reason: "ACCOUNT_NOT_FOUND" },
+      });
+    }
+
+    const cuenta = rows[0];
+
+    if (!cuenta.permite_debito) {
+      return centralSocket.emit("message", {
+        type: "transfer.reserve.result",
+        data: { id, ok: false, reason: "ACCOUNT_NO_DEBIT" },
+      });
+    }
+
+    if (Number(cuenta.saldo) < Number(amount)) {
+      return centralSocket.emit("message", {
+        type: "transfer.reserve.result",
+        data: { id, ok: false, reason: "NO_FUNDS" },
+      });
+    }
+
+    centralSocket.emit("message", {
+      type: "transfer.reserve.result",
+      data: { id, ok: true },
+    });
+  } catch (err) {
+    console.error("Error en handleTransferReserve:", err);
+    centralSocket.emit("message", {
+      type: "transfer.reserve.result",
+      data: { id, ok: false, reason: "RESERVE_FAILED" },
+    });
+  }
+}
+
+async function handleTransferCredit(data) {
+  const { id, to, amount, currency } = data;
+
+  try {
+    const { rows } = await pool.query(
+      "SELECT moneda, permite_credito FROM cuenta WHERE account_id = $1",
+      [to]
+    );
+
+    if (!rows.length) {
+      return centralSocket.emit("message", {
+        type: "transfer.credit.result",
+        data: { id, ok: false, reason: "ACCOUNT_NOT_FOUND" },
+      });
+    }
+
+    const cuenta = rows[0];
+
+    if (!cuenta.permite_credito) {
+      return centralSocket.emit("message", {
+        type: "transfer.credit.result",
+        data: { id, ok: false, reason: "ACCOUNT_NO_CREDIT" },
+      });
+    }
+
+    if (cuenta.moneda !== currency) {
+      return centralSocket.emit("message", {
+        type: "transfer.credit.result",
+        data: { id, ok: false, reason: "CURRENCY_NOT_SUPPORTED" },
+      });
+    }
+
+    await pool.query(
+      "CALL cuenta_depositar($1,$2,$3,$4,$5)",
+      [to, 1, cuenta.moneda, amount, "Transferencia interbancaria recibida"]
+    );
+
+    centralSocket.emit("message", {
+      type: "transfer.credit.result",
+      data: { id, ok: true },
+    });
+  } catch (err) {
+    console.error("Error en handleTransferCredit:", err);
+    centralSocket.emit("message", {
+      type: "transfer.credit.result",
+      data: { id, ok: false, reason: "CREDIT_FAILED" },
+    });
+  }
+}
+
+async function handleTransferDebit(data) {
+  const { id, from, amount } = data;
+
+  try {
+    await pool.query(
+      "CALL cuenta_retirar($1,$2,$3,$4,$5)",
+      [from, 2, 1, amount, "Transferencia interbancaria enviada"]
+    );
+
+    centralSocket.emit("message", {
+      type: "transfer.debit.result",
+      data: { id, ok: true },
+    });
+  } catch (err) {
+    console.error("Error en handleTransferDebit:", err);
+    centralSocket.emit("message", {
+      type: "transfer.debit.result",
+      data: { id, ok: false, reason: "DEBIT_FAILED" },
+    });
+  }
+}
+
+async function handleTransferRollback(data) {
+  const { id, to, amount } = data;
+
+  try {
+    await pool.query(
+      "CALL cuenta_retirar($1,$2,$3,$4,$5)",
+      [to, 3, 1, amount, "Rollback transferencia interbancaria"]
+    );
+    console.log("Rollback aplicado a TX:", id);
+  } catch (err) {
+    console.error("Error en handleTransferRollback:", err);
+  }
+}
+
+// ================== ENDPOINT TRANSFERENCIAS INTERBANCARIAS ==================
+
+app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
+  try {
+    const { from, to, amount, currency, description } = req.body;
+
+    if (!from || !to || !amount || !currency) {
+      return res.status(400).json({
+        mensaje: "Faltan datos: from, to, amount, currency son obligatorios",
+      });
+    }
+
+    const monto = Number(amount);
+    if (isNaN(monto) || monto <= 0) {
+      return res.status(400).json({
+        mensaje: "El monto debe ser un número positivo",
+      });
+    }
+
+    const fromNorm = from.replace(/[\s-]/g, "").toUpperCase();
+    const toNorm = to.replace(/[\s-]/g, "").toUpperCase();
+
+    if (!isValidCostaRicaIban(fromNorm) || !isValidCostaRicaIban(toNorm)) {
+      return res.status(400).json({
+        mensaje: "Alguno de los IBAN no tiene el formato válido",
+      });
+    }
+
+    const cuentas = await pool.query("SELECT * FROM select_cuenta($1)", [
+      req.user.userId,
+    ]);
+
+    const cuentaOrigen = cuentas.rows.find((c) => c.account_id === fromNorm);
+    if (!cuentaOrigen) {
+      return res.status(403).json({
+        mensaje: "La cuenta origen no pertenece al usuario autenticado",
+      });
+    }
+
+    const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
+
+    const waitResult = waitForTransferResult(txId, 30000);
+
+    sendTransferIntent({
+      id: txId,
+      from: fromNorm,
+      to: toNorm,
+      amount: monto,
+      currency: currency.toUpperCase(),
+      description: description || null,
+    });
+
+    const result = await waitResult;
+
+    if (!result.ok) {
+      const reason = result.reason || "UNKNOWN";
+
+      const friendlyMessages = {
+        INVALID_PAYLOAD: "Ocurrió un error con los datos de la transferencia.",
+        SAME_BANK_NOT_ALLOWED:
+          "Debe usar transferencia interna para este movimiento.",
+        UNKNOWN_BANK: "El banco de destino no es reconocido.",
+        DEST_BANK_OFFLINE: "El banco de destino no está disponible.",
+        ACCOUNT_NOT_FOUND: "La cuenta destino no existe.",
+        ACCOUNT_NO_CREDIT:
+          "La cuenta destino no permite recibir este tipo de operaciones.",
+        CURRENCY_NOT_SUPPORTED:
+          "La moneda no coincide con la cuenta destino.",
+        NO_FUNDS: "Fondos insuficientes para completar la transferencia.",
+        RESERVE_FAILED:
+          "No se pudo reservar el monto en la cuenta origen.",
+        CREDIT_FAILED:
+          "No fue posible acreditar los fondos en el banco destino.",
+        DEBIT_FAILED:
+          "No fue posible debitar los fondos de la cuenta origen.",
+        TIMEOUT:
+          "El Banco Central no respondió a tiempo. Intente de nuevo.",
+      };
+
+      return res.status(409).json({
+        mensaje:
+          friendlyMessages[reason] ||
+          "La transferencia fue rechazada por el Banco Central.",
+        reason,
+      });
+    }
+
+    return res.status(200).json({
+      mensaje: "Transferencia interbancaria realizada con éxito",
+      id: txId,
+    });
+  } catch (err) {
+    console.error("Error en /api/v1/transfers/interbank:", err);
+    return res.status(500).json({
+      mensaje: "Error interno procesando transferencia interbancaria",
+    });
+  }
+});
+//-----------------------------------------------------------------------------------------
