@@ -5,7 +5,10 @@ import bcrypt from "bcryptjs";
 import pkg from "pg";
 import { fileURLToPath } from "url";
 import path from "path";
+import dotenv from "dotenv";
 
+
+dotenv.config(); 
 const { Pool } = pkg;
 const pool = new Pool({
   host: process.env.PGHOST,
@@ -360,11 +363,110 @@ app.post("/api/v1/cards/:cardId/view-details", verifyToken, async (req, res) => 
 });
 
 // ========== 6. VALIDAR CUENTA ==========
-app.post("/api/v1/bank/validate-account", verifyToken, async (req, res) => {
-  const { account_id } = req.body;
-  const result = await pool.query("SELECT * FROM sp_bank_validate_account($1)", [account_id]);
-  res.json(result.rows[0]);
+app.post("/api/v1/bank/validate-account", async (req, res) => {
+  console.log(">>> Entró a /api/v1/bank/validate-account");
+  console.log("Headers recibidos:", req.headers);
+
+  try {
+    // 1) Autenticación por X-API-TOKEN
+    const token = req.header("X-API-TOKEN");
+
+    if (!token) {
+      return res.status(401).json({
+        error: "UNAUTHORIZED",
+        message: "Falta header X-API-TOKEN",
+      });
+    }
+
+    const expectedToken =
+      process.env.BANK_CENTRAL_TOKEN || "BANK-CENTRAL-IC8057-2025";
+
+    if (token !== expectedToken) {
+      return res.status(401).json({
+        error: "UNAUTHORIZED",
+        message: "Token inválido en X-API-TOKEN",
+      });
+    }// 2) Validar body { iban }
+const { iban } = req.body || {};
+
+if (!iban) {
+  return res.status(400).json({
+    error: "INVALID_ACCOUNT_FORMAT",
+    message: "El campo 'iban' es obligatorio.",
+  });
+}
+
+// Normalizamos (sin espacios ni guiones)
+const normalized = iban.replace(/[\s-]/g, "");
+
+// Validar formato IBAN del proyecto
+if (!isValidCostaRicaIban(normalized)) {
+  return res.status(400).json({
+    error: "INVALID_ACCOUNT_FORMAT",
+    message: "El formato del iban no es válido.",
+  });
+}
+
+
+    // Extraer código de banco: CR01 B0X NNNNNNNNNNNN
+    const match = /^CR01B0([1-8])[0-9]{12}$/.exec(normalized);
+    const bancoDestino = match ? match[1] : null; // "1".."8"
+
+    if (bancoDestino !== "7") {
+      // IBAN válido pero NO pertenece a Banco NSFM
+      return res.status(200).json({
+        exists: false,
+        info: null,
+      });
+    }
+
+    // 3) Consultar la BD SOLO si es B07
+    const { rows } = await pool.query(
+      "SELECT * FROM sp_bank_validate_account($1)",
+      [normalized] 
+    );
+
+    // Si no hay filas o existe = false → exists = false, info = null
+    if (!rows.length || !rows[0].existe) {
+      return res.status(200).json({
+        exists: false,
+        info: null,
+      });
+    }
+
+    const cuenta = rows[0];
+
+    // 4) Respuesta estándar de éxito (contrato del proyecto)
+    return res.status(200).json({
+      exists: true,
+      info: {
+        name: cuenta.nombre,
+        identification: cuenta.identificacion,
+        currency: cuenta.moneda, // "CRC" o "USD"
+        debit: cuenta.permite_debito,
+        credit: cuenta.permite_credito,
+      },
+    });
+  } catch (err) {
+    console.error("Error en /api/v1/bank/validate-account:", err);
+    return res.status(500).json({
+      error: "INTERNAL_ERROR",
+      message: "Error interno al validar la cuenta.",
+    });
+  }
 });
+
+
+const isValidCostaRicaIban = (iban) => {
+  if (typeof iban !== "string") return false;
+
+  const normalized = iban.replace(/[\s-]/g, "");
+
+  const regex = /^CR01B0[1-8][0-9]{12}$/;
+
+  return regex.test(normalized);
+};
+
 
 
 

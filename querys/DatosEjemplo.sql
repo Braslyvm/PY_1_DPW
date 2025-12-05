@@ -62,15 +62,15 @@ CALL insert_usuario(
 
 
 -- Cuenta en colones (Ahorro)
-INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
-VALUES (
-    'CR01-1234-5678-000000000011',
-    115470822, 
-    1,  
-    1,  
-    1050000.50,
-    1   
+CALL insert_cuenta(
+  NULL,         -- p_account_id → que el SP genere el IBAN CR01B07XXXXXXXXXXXX
+  115470822,    -- p_usuario_documento
+  1,            -- p_tipo
+  1,            -- p_moneda
+  1050000.50,   -- p_saldo
+  1             -- p_estado
 );
+
 
 -- Cuenta en dólares (Corriente)
 INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)

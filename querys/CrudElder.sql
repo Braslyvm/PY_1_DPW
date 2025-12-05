@@ -135,27 +135,96 @@ end;
 $$;
 
 
+-- Secuencia para la parte numérica del IBAN (12 dígitos)
+CREATE SEQUENCE IF NOT EXISTS seq_cuenta_b07
+    START 1
+    INCREMENT 1;
 
--- Insertar cuenta
-create or replace procedure insert_cuenta(
-    p_account_id varchar(30),
-    p_usuario_documento int,
-    p_tipo int,
-    p_moneda int,
-    p_saldo numeric(18,2) default 0,
-    p_estado int default 1
-)
-language plpgsql
-as $$
-begin
-    if coalesce(p_saldo,0) < 0 then
-        raise exception 'El saldo inicial no puede ser negativo';
-    end if;
-
-    insert into cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
-    values (p_account_id, p_usuario_documento, p_tipo, p_moneda, coalesce(p_saldo,0), p_estado);
-end;
+-- Generador de IBAN para Banco NSFM (B07)
+CREATE OR REPLACE FUNCTION fn_generate_iban_b07()
+RETURNS VARCHAR(30)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_num BIGINT;
+BEGIN
+    v_num := nextval('seq_cuenta_b07');
+    -- Prefijo fijo CR01B07 + 12 dígitos
+    RETURN 'CR01B07' || LPAD(v_num::TEXT, 12, '0');
+END;
 $$;
+-- Insertar cuenta
+
+CREATE OR REPLACE PROCEDURE insert_cuenta(
+    p_account_id       VARCHAR(30),   -- puede venir NULL
+    p_usuario_documento INT,
+    p_tipo              INT,
+    p_moneda            INT,
+    p_saldo             NUMERIC(18,2) DEFAULT 0,
+    p_estado            INT DEFAULT 1
+)
+LANGUAGE plpgsql
+AS $$
+DECLARE
+    v_account_id VARCHAR(30);
+BEGIN
+    IF COALESCE(p_saldo, 0) < 0 THEN
+        RAISE EXCEPTION 'El saldo inicial no puede ser negativo';
+    END IF;
+
+    -- 1) Si no viene IBAN, lo generamos
+    IF p_account_id IS NULL OR p_account_id = '' THEN
+        v_account_id := fn_generate_iban_b07();
+    ELSE
+        -- 2) Si viene, validamos formato del proyecto para B07
+        IF p_account_id !~ '^CR01B07[0-9]{12}$' THEN
+            RAISE EXCEPTION 'El IBAN % no cumple el formato CR01B07XXXXXXXXXXXX', p_account_id;
+        END IF;
+        v_account_id := p_account_id;
+    END IF;
+
+    -- 3) Insertar cuenta
+    INSERT INTO cuenta (account_id, usuario_documento, tipo, moneda, saldo, estado)
+    VALUES (v_account_id, p_usuario_documento, p_tipo, p_moneda, COALESCE(p_saldo,0), p_estado);
+END;
+$$;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- Actualizar cuenta
 create or replace procedure update_cuenta(
@@ -705,36 +774,49 @@ $$;
 
 
 -- Verifica si una cuenta existe y devuelve datos básicos del titular.
+DROP FUNCTION IF EXISTS sp_bank_validate_account(VARCHAR);
 CREATE OR REPLACE FUNCTION sp_bank_validate_account(
-    p_account_id VARCHAR(30)
+    p_iban VARCHAR(30)        
 )
 RETURNS TABLE (
-    existe BOOLEAN,
-    titular_nombre VARCHAR(100),
-    titular_correo VARCHAR(100),
-    moneda VARCHAR(10),
-    saldo NUMERIC(18,2)
+    existe           BOOLEAN,
+    nombre           TEXT,
+    identificacion   TEXT,
+    moneda           TEXT,        -- <- TEXT
+    permite_debito   BOOLEAN,
+    permite_credito  BOOLEAN
 )
-LANGUAGE plpgsql
 AS $$
 BEGIN
+
     RETURN QUERY
     SELECT
-        TRUE::BOOLEAN,
-        CONCAT(u.nombre, ' ', u.apellido1, ' ', u.apellido2)::VARCHAR(100),
-        u.correo::VARCHAR(100),
-        m.iso::VARCHAR(10),
-        c.saldo::NUMERIC(18,2)
+        TRUE AS existe,
+        (u.nombre || ' ' || u.apellido1 || ' ' || u.apellido2) AS nombre,
+        u.numero_documento::TEXT AS identificacion,
+        m.iso::TEXT AS moneda,        
+        (c.estado = 1) AS permite_debito,
+        (c.estado = 1) AS permite_credito
     FROM cuenta c
     JOIN usuario u ON u.numero_documento = c.usuario_documento
-    JOIN moneda m ON m.id = c.moneda
-    WHERE c.account_id = p_account_id;
+    JOIN moneda  m ON m.id = c.moneda
+    WHERE c.account_id = p_iban;
 
+    
     IF NOT FOUND THEN
-        RETURN QUERY SELECT FALSE::BOOLEAN, NULL::VARCHAR(100), NULL::VARCHAR(100), NULL::VARCHAR(10), NULL::NUMERIC(18,2);
+        RETURN QUERY
+        SELECT
+            FALSE AS existe,
+            NULL::TEXT AS nombre,
+            NULL::TEXT AS identificacion,
+            NULL::TEXT AS moneda,
+            FALSE AS permite_debito,
+            FALSE AS permite_credito;
     END IF;
 END;
-$$;
+$$ LANGUAGE plpgsql;
+
+
 
 --proceso para cambio de contrase
 CREATE OR REPLACE PROCEDURE sp_usuario_cambiar_contrasena(
@@ -753,6 +835,8 @@ BEGIN
     END IF;
 END;
 $$;
+
+SELECT * FROM sp_bank_validate_account('CR01B01XXXXYYYYZZZZZZZZZZZZ');
 
 
 -- Crud de la tabla de Rol
