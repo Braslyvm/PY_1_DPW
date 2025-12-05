@@ -1,4 +1,4 @@
-import React, { act, useState } from "react";
+import React, { useState } from "react";
 import Header from "./Header";
 import DetallesCuenta from "./DetallesCuenta";
 import DetalleTarjeta from "./DetalleTarjeta";
@@ -9,25 +9,22 @@ import MainContent from "./MainContent";
 import VerCuentas from "./verCuentas";
 import Transferencias from "./Trasnferencias";
 import SolicitudTarjeta from "./solicitarTargeta";
+
 const Dashboard: React.FC = () => {
   const [activeTab, setActiveTab] = useState("cuentas");
-  const [previousTab, setPreviousTab] = useState("cuentas"); // Para recordar la pestaña anterior
+  const [previousTab, setPreviousTab] = useState("cuentas");
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(
     null
   );
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
-  const username = localStorage.getItem("username");
-
- 
+  const username = localStorage.getItem("username"); 
   const handleSetActiveTab = (tab: string) => {
     setPreviousTab(activeTab);
     setActiveTab(tab);
   };
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
-    >
+    <div style={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}>
       <Header setActiveTab={handleSetActiveTab} />
       <MainContent
         activeTab={activeTab}
@@ -39,6 +36,7 @@ const Dashboard: React.FC = () => {
                 setSelectedAccountId={setSelectedAccountId}
               />
             )}
+
             {activeTab === "detalleCuenta" && selectedAccountId && (
               <DetallesCuenta
                 setActiveTab={handleSetActiveTab}
@@ -52,6 +50,7 @@ const Dashboard: React.FC = () => {
                 setSelectedCardId={setSelectedCardId}
               />
             )}
+
             {activeTab === "detalleTarjeta" && selectedCardId && (
               <DetalleTarjeta
                 setActiveTab={handleSetActiveTab}
@@ -60,22 +59,23 @@ const Dashboard: React.FC = () => {
             )}
 
             {activeTab === "registroCuenta" && (
-              <RegistroDeCuenta
-                setActiveTab={() => setActiveTab(previousTab)}
-              />
+              <RegistroDeCuenta setActiveTab={() => setActiveTab(previousTab)} />
             )}
+
             {activeTab === "recuperarPin" && selectedCardId && (
               <ConsultarPIN
                 setActiveTab={() => setActiveTab("detalleTarjeta")}
                 cardId={selectedCardId}
               />
             )}
+
             {activeTab === "trasferencia" && username && (
-              <Transferencias username={username} />
+              <Transferencias username={username as string} />
             )}
+
             {activeTab === "SolicitudTarjeta" && username && (
               <SolicitudTarjeta
-                username={username}
+                username={username as string}
                 setActiveTab={handleSetActiveTab}
               />
             )}

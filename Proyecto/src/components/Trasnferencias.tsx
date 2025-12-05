@@ -2,7 +2,6 @@ import React, { useState, useEffect } from "react";
 import Swal from "sweetalert2";
 import { apiFetch } from "../config/Conectar";
 
-// ====== Interfaces ======
 interface Cuenta {
   account_id: string;
   alias: string;
@@ -18,14 +17,16 @@ interface TransferenciaData {
   origen: string;
   destino: string;
   monto: number;
-  moneda: string; // "CRC" | "USD"
-  tipo_mov?: number; // 2 = Corriente, 3 = Crédito
+  moneda: string;
+  tipo_mov?: number;
   descripcion?: string;
   fecha?: string;
   titularDestino?: string;
 }
 
-// ====== Helpers ======
+interface TransferenciasProps {
+  username: string;
+}
 const normalizeIban = (iban: string) =>
   iban.replace(/[\s-]/g, "").toUpperCase();
 
@@ -44,10 +45,10 @@ const toNumero = (valor: number | string): number => {
 const monedaToId = (moneda: string): number => {
   const m = moneda.toUpperCase();
   if (m === "USD") return 2;
-  return 1; 
+  return 1;
 };
 
-const Transferencias: React.FC = () => {
+const Transferencias: React.FC<TransferenciasProps> = ({ username }) => {
   const [tipo, setTipo] = useState<TipoTransferencia>("propia");
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
   const [loading, setLoading] = useState(false);
@@ -61,6 +62,8 @@ const Transferencias: React.FC = () => {
     descripcion: "",
   });
   const [error, setError] = useState("");
+
+
 
   const cargarCuentas = async () => {
     try {
@@ -82,7 +85,6 @@ const Transferencias: React.FC = () => {
             : "USD",
         saldo: Number(c.saldo) || 0,
       }));
-
       setCuentas(cuentasNormalizadas);
     } catch (err: any) {
       console.error("Error al cargar cuentas:", err);
@@ -127,12 +129,11 @@ const Transferencias: React.FC = () => {
       if (cuentaOrigen) {
         setForm((prev) => ({
           ...prev,
-          moneda: cuentaOrigen.moneda, 
+          moneda: cuentaOrigen.moneda,
         }));
       }
     }
   };
-
 
   const realizarTransferencia = async (
     data: TransferenciaData
@@ -160,13 +161,13 @@ const Transferencias: React.FC = () => {
     const esMismoBanco = data.tipo === "propia";
 
     if (esMismoBanco) {
-      const tipoMovFinal = data.tipo_mov ?? 2; 
+      const tipoMovFinal = data.tipo_mov ?? 2;
 
       const payload = {
         origen: fromNorm,
         destino: toNorm,
         tipo_mov: tipoMovFinal,
-        moneda: monedaToId(monedaFinalStr), 
+        moneda: monedaToId(monedaFinalStr),
         monto: data.monto,
         descripcion:
           data.descripcion || "Transferencia entre cuentas de ahorro",
@@ -207,7 +208,6 @@ const Transferencias: React.FC = () => {
     return json;
   };
 
-  // ========= Submit + SweetAlert =========
   const handleContinuar = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -279,7 +279,7 @@ const Transferencias: React.FC = () => {
       const respuesta = await realizarTransferencia(nuevoForm);
       Swal.close();
 
-      await cargarCuentas(); // refresca saldos
+      await cargarCuentas();
 
       await Swal.fire({
         title: "Transferencia realizada",
