@@ -354,7 +354,10 @@ app.post("/api/v1/cards/:cardId/otp", verifyToken, async (req, res) => {
 });
 
 // Ver detalles tras OTP
-app.post("/api/v1/cards/:cardId/v
+app.post("/api/v1/cards/:cardId/view-details", verifyToken, async (req, res) => {
+  const { codigo } = req.body;
+  const verif = await pool.query("SELECT sp_otp_consume($1,$2,$3) AS valido", [req.user.userId, codigo, 'view_cvv']);
+  if (!verif.rows[0].valido)
     return res.status(400).json({ mensaje: "OTP inválido" });
   res.json({ mensaje: "Acceso temporal concedido" });
 });
