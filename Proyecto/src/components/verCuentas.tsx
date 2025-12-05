@@ -9,8 +9,10 @@ import { apiFetch } from "../config/Conectar";
 type Cuenta = {
   account_id: string;
   alias?: string | null;
-  tipo: string;
-  moneda: string;
+  tipoId: number;   // 2, 3, etc. (crudo)
+  tipo: string;     // Corriente / Crédito (para mostrar)
+  monedaId: number; // 1, 2 (crudo)
+  moneda: string;   // CRC / USD (para mostrar)
   saldo: number;
 };
 
@@ -18,6 +20,30 @@ interface VerCuentasProps {
   setActiveTab: (tab: string) => void;
   setSelectedAccountId: (id: string) => void;
 }
+
+// Mapea el catálogo de tipo de cuenta
+const mapTipoCuenta = (raw: number): string => {
+  switch (raw) {
+    case 2:
+      return "Corriente";
+    case 3:
+      return "Crédito";
+    default:
+      return "Desconocido";
+  }
+};
+
+// Mapea el catálogo de moneda
+const mapMoneda = (raw: number): string => {
+  switch (raw) {
+    case 1:
+      return "CRC";
+    case 2:
+      return "USD";
+    default:
+      return "DESCONOCIDA";
+  }
+};
 
 const VerCuentas: React.FC<VerCuentasProps> = ({
   setActiveTab,
@@ -32,11 +58,30 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
       try {
         setLoading(true);
         setError(null);
-        const data = await apiFetch<Cuenta[]>("/api/v1/accounts", {
+
+        // Traemos las cuentas crudas del backend
+        const data = await apiFetch<any[]>("/api/v1/accounts", {
           method: "GET",
-          auth: true, 
+          auth: true,
         });
-        setCuentas(data);
+
+        // Normalizamos para que el componente solo trabaje con labels
+        const normalizadas: Cuenta[] = data.map((c) => {
+          const tipoId = Number(c.tipo);
+          const monedaId = Number(c.moneda);
+
+          return {
+            account_id: c.account_id,
+            alias: c.alias ?? null,
+            tipoId,
+            tipo: mapTipoCuenta(tipoId),
+            monedaId,
+            moneda: mapMoneda(monedaId),
+            saldo: Number(c.saldo) || 0,
+          };
+        });
+
+        setCuentas(normalizadas);
       } catch (err: any) {
         console.error("Error al cargar cuentas:", err);
         setError(err.message || "Error al cargar cuentas");
@@ -79,6 +124,7 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
       <div className="cuentas-wrapper">
         <h2 className="titulo">Cuentas del usuario</h2>
         <p className="subtitulo">Gestiona y visualiza tus cuentas bancarias</p>
+
         <div className="swiper-wrapper-custom">
           <Swiper
             modules={[Navigation, Pagination]}
