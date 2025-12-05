@@ -7,8 +7,8 @@ interface Cuenta {
   account_id: string;
   alias: string;
   tipo: string;
-  moneda: string; 
-  saldo: number | string; 
+  moneda: "CRC" | "USD" | string;
+  saldo: number;
 }
 
 type TipoTransferencia = "propia" | "interbanco";
@@ -18,14 +18,14 @@ interface TransferenciaData {
   origen: string;
   destino: string;
   monto: number;
-  moneda: string; 
-  tipo_mov?: number; 
+  moneda: string; // "CRC" | "USD"
+  tipo_mov?: number; // 2 = Corriente, 3 = Crédito
   descripcion?: string;
   fecha?: string;
   titularDestino?: string;
 }
 
-
+// ====== Helpers ======
 const normalizeIban = (iban: string) =>
   iban.replace(/[\s-]/g, "").toUpperCase();
 
@@ -37,11 +37,9 @@ const isValidCostaRicaIban = (iban: string): boolean => {
 };
 
 const toNumero = (valor: number | string): number => {
-  if (typeof valor === "number") return valor;
-  const n = parseFloat(valor);
+  const n = typeof valor === "number" ? valor : parseFloat(valor);
   return isNaN(n) ? 0 : n;
 };
-
 
 const monedaToId = (moneda: string): number => {
   const m = moneda.toUpperCase();
@@ -64,17 +62,28 @@ const Transferencias: React.FC = () => {
   });
   const [error, setError] = useState("");
 
-  // ========= Cargar cuentas (reutilizable) =========
   const cargarCuentas = async () => {
     try {
       setLoading(true);
       setError("");
-      // truco anti-304: query param único
-      const data = await apiFetch<Cuenta[]>(`/api/v1/accounts?_=${Date.now()}`, {
+      const cuentasApi = await apiFetch<any[]>("/api/v1/accounts", {
         method: "GET",
         auth: true,
       });
-      setCuentas(data);
+      const cuentasNormalizadas: Cuenta[] = cuentasApi.map((c) => ({
+        account_id: c.account_id,
+        alias: c.alias || c.account_id,
+        tipo: c.tipo,
+        moneda:
+          typeof c.moneda === "string"
+            ? c.moneda
+            : c.moneda === 1
+            ? "CRC"
+            : "USD",
+        saldo: Number(c.saldo) || 0,
+      }));
+
+      setCuentas(cuentasNormalizadas);
     } catch (err: any) {
       console.error("Error al cargar cuentas:", err);
       setError(err.message || "Error al cargar cuentas");
@@ -86,7 +95,6 @@ const Transferencias: React.FC = () => {
   useEffect(() => {
     cargarCuentas();
   }, []);
-
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -114,7 +122,6 @@ const Transferencias: React.FC = () => {
       [name]: value,
     }));
 
- 
     if (name === "origen") {
       const cuentaOrigen = cuentas.find((c) => c.account_id === value);
       if (cuentaOrigen) {
@@ -132,7 +139,6 @@ const Transferencias: React.FC = () => {
   ): Promise<{ mensaje: string; id?: string; reason?: string }> => {
     const fromNorm = normalizeIban(data.origen);
     const toNorm = normalizeIban(data.destino);
-
 
     if (data.tipo === "interbanco" && !isValidCostaRicaIban(toNorm)) {
       throw new Error("El IBAN destino no tiene un formato válido.");
@@ -154,7 +160,7 @@ const Transferencias: React.FC = () => {
     const esMismoBanco = data.tipo === "propia";
 
     if (esMismoBanco) {
-      const tipoMovFinal = data.tipo_mov ?? 2; o
+      const tipoMovFinal = data.tipo_mov ?? 2; 
 
       const payload = {
         origen: fromNorm,
@@ -201,6 +207,7 @@ const Transferencias: React.FC = () => {
     return json;
   };
 
+  // ========= Submit + SweetAlert =========
   const handleContinuar = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -272,7 +279,7 @@ const Transferencias: React.FC = () => {
       const respuesta = await realizarTransferencia(nuevoForm);
       Swal.close();
 
-      await cargarCuentas();
+      await cargarCuentas(); // refresca saldos
 
       await Swal.fire({
         title: "Transferencia realizada",
@@ -375,7 +382,8 @@ const Transferencias: React.FC = () => {
                 <option value="">Seleccione cuenta</option>
                 {cuentas.map((c) => (
                   <option key={c.account_id} value={c.account_id}>
-                    {c.account_id} - Saldo: {toNumero(c.saldo).toFixed(2)}
+                    {c.alias} ({c.account_id}) - Saldo:{" "}
+                    {toNumero(c.saldo).toFixed(2)} {c.moneda}
                   </option>
                 ))}
               </select>
@@ -395,8 +403,8 @@ const Transferencias: React.FC = () => {
                     .filter((c) => c.account_id !== form.origen)
                     .map((c) => (
                       <option key={c.account_id} value={c.account_id}>
-                        {c.account_id} - Saldo:{" "}
-                        {toNumero(c.saldo).toFixed(2)}
+                        {c.alias} ({c.account_id}) - Saldo:{" "}
+                        {toNumero(c.saldo).toFixed(2)} {c.moneda}
                       </option>
                     ))}
                 </select>
