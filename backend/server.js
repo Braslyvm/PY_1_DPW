@@ -235,7 +235,7 @@ app.delete("/api/v1/users/:id", verifyToken, async (req, res) => {
 app.post("/api/v1/accounts", verifyToken, async (req, res) => {
   const {tipo, moneda, saldo } = req.body;
   try {
-    await pool.query("CALL insert_cuenta($1,$2,$3,$4,$5)", [null, req.user.userId, tipo, moneda, saldo]);
+    await pool.query("CALL insert_cuenta($1,$2,$3,$4)", [req.user.userId, tipo, moneda, saldo]);
     res.status(201).json({ mensaje: "Cuenta creada correctamente" });
   } catch (err) {
     console.error(err);

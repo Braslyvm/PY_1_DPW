@@ -158,8 +158,7 @@ $$;
 ALTER TABLE cuenta
 ADD COLUMN permite_debito  BOOLEAN DEFAULT TRUE,
 ADD COLUMN permite_credito BOOLEAN DEFAULT TRUE;
- CREATE OR REPLACE PROCEDURE insert_cuenta(
-    p_account_id        VARCHAR(30),
+CREATE OR REPLACE PROCEDURE insert_cuenta(
     p_usuario_documento INT,
     p_tipo              INT,
     p_moneda            INT,
@@ -178,15 +177,8 @@ BEGIN
         RAISE EXCEPTION 'El saldo inicial no puede ser negativo';
     END IF;
 
-    -- 1) Generar o validar IBAN
-    IF p_account_id IS NULL OR p_account_id = '' THEN
-        v_account_id := fn_generate_iban_b07();
-    ELSE
-        IF p_account_id !~ '^CR01B07[0-9]{12}$' THEN
-            RAISE EXCEPTION 'El IBAN % no cumple el formato CR01B07XXXXXXXXXXXX', p_account_id;
-        END IF;
-        v_account_id := p_account_id;
-    END IF;
+    -- 1) SIEMPRE generar IBAN dinámico
+    v_account_id := fn_generate_iban_b07();
 
     -- 2) Obtener nombre del tipo de cuenta
     SELECT nombre
@@ -233,8 +225,6 @@ BEGIN
     );
 END;
 $$;
-
-
 
 
 
