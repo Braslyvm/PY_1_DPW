@@ -468,6 +468,7 @@ const isValidCostaRicaIban = (iban) => {
   return regex.test(normalized);
 };
 
+
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
@@ -550,15 +551,17 @@ centralSocket.on("message", async (msg) => {
     console.error("Error manejando mensaje WS:", err);
   }
 });
-
 function resolveTransferPromise(id, payload) {
   const entry = pendingTransfers.get(id);
-  if (entry) {
+  if (!entry) return;
+
+  try {
     entry.resolve(payload);
-    clearTimeout(entry.timeoutId);
+  } finally {
     pendingTransfers.delete(id);
   }
 }
+
 
 function sendTransferIntent(payload) {
   if (!centralSocket.connected) {
@@ -570,17 +573,13 @@ function sendTransferIntent(payload) {
     data: payload,
   });
 }
-
-function waitForTransferResult(id, timeoutMs = 30000) {
+function waitForTransferResult(id) {
   return new Promise((resolve) => {
-    const timeoutId = setTimeout(() => {
-      pendingTransfers.delete(id);
-      resolve({ ok: false, reason: "TIMEOUT" });
-    }, timeoutMs);
 
-    pendingTransfers.set(id, { resolve, timeoutId });
+    pendingTransfers.set(id, { resolve });
   });
 }
+
 
 // =================== HANDLERS DE EVENTOS (lado banco) ===================
 
@@ -765,7 +764,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
     const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     console.log("🌐 Iniciando transferencia interbancaria TX:", txId);
 
-    const waitResult = waitForTransferResult(txId, 30000);
+    const waitResult = waitForTransferResult(txId);
 
     sendTransferIntent({
       id: txId,
