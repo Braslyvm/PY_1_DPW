@@ -482,11 +482,10 @@ app.listen(PORT, () => {
 });
 
 
-
-
 //-----------------------------------------------------------------------------------------
-//----------------------WEB SOCKETS (POR IMPLEMENTAR)---------------------------------
+//---------------------- WEB SOCKETS BANCO CENTRAL + TRANSFERENCIAS INTERBANCARIAS -------
 //-----------------------------------------------------------------------------------------
+
 // =================== BANCO CENTRAL (WebSocket) ===================
 
 const CENTRAL_WS_URL = process.env.CENTRAL_WS_URL || "http://137.184.36.3:6000";
@@ -751,7 +750,6 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       });
     }
 
-    // 🔹 Verificar que la cuenta origen pertenece al usuario logueado
     const cuentas = await pool.query("SELECT * FROM select_cuenta($1)", [
       req.user.userId,
     ]);
@@ -763,7 +761,6 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       });
     }
 
-    // 🔹 Revisar si HAY conexión al Banco Central antes de intentar
     if (!centralSocket.connected) {
       console.error("No hay conexión activa con el Banco Central");
       return res.status(503).json({
@@ -771,14 +768,11 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       });
     }
 
-    // 🔹 ID único de transacción
     const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
     console.log("🌐 Iniciando transferencia interbancaria TX:", txId);
 
-    // Preparamos la promesa que esperará commit/reject
     const waitResult = waitForTransferResult(txId, 30000);
 
-    // Mandamos intención de transferencia al Banco Central
     sendTransferIntent({
       id: txId,
       from: fromNorm,
@@ -788,7 +782,6 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       description: description || null,
     });
 
-    // Esperamos respuesta (commit/reject) del Banco Central
     const result = await waitResult;
     console.log("✅ Resultado TX", txId, "=>", result);
 
