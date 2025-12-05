@@ -468,13 +468,6 @@ const isValidCostaRicaIban = (iban) => {
   return regex.test(normalized);
 };
 
-
-
-
-app.use((req, res) => {
-  res.status(404).json({ mensaje: "Ruta no encontrada" });
-});
-
 const PORT = process.env.PORT || 4000;
 
 app.listen(PORT, () => {
@@ -725,6 +718,7 @@ async function handleTransferRollback(data) {
 // ================== ENDPOINT TRANSFERENCIAS INTERBANCARIAS ==================
 
 app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
+  console.log(">>> Entró a /api/v1/transfers/interbank");
   try {
     const { from, to, amount, currency, description } = req.body;
 
