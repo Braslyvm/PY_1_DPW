@@ -488,14 +488,14 @@ app.listen(PORT, () => {
 
 // =================== BANCO CENTRAL (WebSocket) ===================
 
-const CENTRAL_WS_URL = process.env.CENTRAL_WS_URL || "http://137.184.36.3:6000";
+const CENTRAL_WS_URL = "http://137.184.36.3:6000";
 
 const centralSocket = io(CENTRAL_WS_URL, {
   transports: ["websocket"],
   auth: {
-    bankId: process.env.BANK_ID || "B07",
-    bankName: process.env.BANK_NAME || "Banco NSFM",
-    token: process.env.BANK_CENTRAL_TOKEN || "BANK-CENTRAL-IC8057-2025",
+    bankId:  "B07",
+    bankName: "Banco NSFM",
+    token: "BANK-CENTRAL-IC8057-2025",
   },
 });
 
