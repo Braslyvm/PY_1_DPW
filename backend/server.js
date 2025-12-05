@@ -496,15 +496,15 @@ const centralSocket = io(CENTRAL_WS_URL, {
 const pendingTransfers = new Map();
 
 centralSocket.on("connect", () => {
-  console.log("✅ Conectado al Banco Central. socket.id =", centralSocket.id);
+  console.log("Conectado al Banco Central. socket.id =", centralSocket.id);
 });
 
 centralSocket.on("disconnect", (reason) => {
-  console.log("⚠️ Desconectado del Banco Central. Razón:", reason);
+  console.log(" Desconectado del Banco Central. Razón:", reason);
 });
 
 centralSocket.on("connect_error", (err) => {
-  console.error("❌ Error conectando al Banco Central:", err.message);
+  console.error(" Error conectando al Banco Central:", err.message);
 });
 
 centralSocket.on("message", async (msg) => {
@@ -763,7 +763,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
     }
 
     const txId = `TX-${Date.now()}-${Math.floor(Math.random() * 10000)}`;
-    console.log("🌐 Iniciando transferencia interbancaria TX:", txId);
+    console.log(" Iniciando transferencia interbancaria TX:", txId);
 
     const waitResult = waitForTransferResult(txId);
      console.log("Enviando intención de transferencia al Banco Central:", {
@@ -784,7 +784,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
 
 
     const result = await waitResult;
-    console.log("✅ Resultado TX", txId, "=>", result);
+    console.log(" Resultado TX", txId, "=>", result);
 
     if (!result.ok) {
       const reason = result.reason || "UNKNOWN";
@@ -824,7 +824,7 @@ app.post("/api/v1/transfers/interbank", verifyToken, async (req, res) => {
       id: txId,
     });
   } catch (err) {
-    console.error("❌ Error en /api/v1/transfers/interbank:", err);
+    console.error(" Error en /api/v1/transfers/interbank:", err);
     console.log(err.stack);
     return res.status(500).json({
       mensaje: "Error interno procesando transferencia interbancaria",
