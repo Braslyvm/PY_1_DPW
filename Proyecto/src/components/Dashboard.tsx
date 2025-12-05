@@ -18,7 +18,7 @@ const Dashboard: React.FC = () => {
   const [selectedCardId, setSelectedCardId] = useState<string | null>(null);
   const username = localStorage.getItem("username");
 
-  // Función para cambiar pestaña y recordar la anterior
+ 
   const handleSetActiveTab = (tab: string) => {
     setPreviousTab(activeTab);
     setActiveTab(tab);

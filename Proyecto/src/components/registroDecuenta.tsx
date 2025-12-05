@@ -1,55 +1,68 @@
 import React, { FC } from "react";
 import Swal from "sweetalert2";
+import { apiFetch } from "../config/Conectar";
 
 interface RegistroDeCuentaProps {
   setActiveTab: (tab: string) => void;
 }
 
 const RegistroDeCuenta: FC<RegistroDeCuentaProps> = ({ setActiveTab }) => {
-  // Manejo del envío del formulario
-  const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const tipo = formData.get("tipo") as string;  
+    const moneda = formData.get("moneda") as string; 
+    const saldoStr = formData.get("saldo") as string;
 
-    if (validateForm()) {
-      const formData = new FormData(event.currentTarget);
+    const saldo = parseFloat(saldoStr);
+    if (!tipo || !moneda || isNaN(saldo) || saldo < 0) {
+      Swal.fire({
+        icon: "warning",
+        title: "Datos incompletos o inválidos",
+        text: "Verifique el IBAN, tipo de cuenta, moneda y saldo inicial.",
+      });
+      return;
+    }
 
-      const nuevaCuenta = {
-        account_id: formData.get("account_id") as string,
-        alias: formData.get("alias") as string,
-        tipo: formData.get("tipo") as string,
-        moneda: formData.get("moneda") as string,
-        saldo: parseFloat(formData.get("saldo") as string),
-      };
+    const tipoId = parseInt(tipo, 10);   
+    const monedaId = parseInt(moneda, 10);  
 
-      // Guardar en localStorage (array de cuentas)
-      const cuentasGuardadas = JSON.parse(
-        localStorage.getItem("cuentas") || "[]"
-      );
-      cuentasGuardadas.push(nuevaCuenta);
-      localStorage.setItem("cuentas", JSON.stringify(cuentasGuardadas));
+    const tipoLabel =
+      tipoId === 2 ? "Corriente" : tipoId === 3 ? "Crédito" : "Desconocido";
+    const monedaLabel = monedaId === 1 ? "CRC" : "USD";
+    try {
+      await apiFetch("/api/v1/accounts", {
+        method: "POST",
+        auth: true,
+        body: JSON.stringify({
+          tipo: tipoId,      
+          moneda: monedaId,  
+          saldo,
+        }),
+      });
 
-      // Mostrar confirmación con Swal
       Swal.fire({
         title: "Cuenta registrada ✅",
         html: `
-          <p><b>Número de cuenta (IBAN):</b> ${nuevaCuenta.account_id}</p>
-          <p><b>Alias:</b> ${nuevaCuenta.alias}</p>
-          <p><b>Tipo:</b> ${nuevaCuenta.tipo}</p>
-          <p><b>Moneda:</b> ${nuevaCuenta.moneda}</p>
-          <p><b>Saldo inicial:</b> ${nuevaCuenta.saldo.toFixed(2)}</p>
+          <p><b>Tipo:</b> ${tipoLabel}</p>
+          <p><b>Moneda:</b> ${monedaLabel}</p>
+          <p><b>Saldo inicial:</b> ${saldo.toFixed(2)}</p>
         `,
         icon: "success",
         confirmButtonText: "Aceptar",
       }).then(() => {
-        // Volver a la lista de cuentas
+        form.reset();
         setActiveTab("cuentas");
       });
+    } catch (error: any) {
+      console.error("Error creando cuenta:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error al registrar la cuenta",
+        text: error.message || "No se pudo registrar la cuenta.",
+      });
     }
-  };
-
-  // Validaciones (puedes agregar más aquí)
-  const validateForm = () => {
-    return true;
   };
 
   return (
@@ -57,48 +70,24 @@ const RegistroDeCuenta: FC<RegistroDeCuentaProps> = ({ setActiveTab }) => {
       <div className="registrarcuenta-form-wrapper">
         <header className="registrarcuenta-header">
           <h2>Registro de Cuenta</h2>
-          <p>
-            Complete la información para registrar una nueva cuenta bancaria
-          </p>
+          <p>Complete la información para registrar una nueva cuenta bancaria</p>
         </header>
         <main>
           <form className="registrarcuenta-form" onSubmit={handleSubmit}>
             <div>
-              <label htmlFor="account_id">Identificador (IBAN):</label>
-              <input
-                type="text"
-                id="account_id"
-                name="account_id"
-                required
-                pattern="^CR01-\d{4}-\d{4}-\d{12}$"
-                placeholder="CR01-1234-5678-123456789012"
-              />
-            </div>
-            <div>
-              <label htmlFor="alias">Alias:</label>
-              <input
-                type="text"
-                id="alias"
-                name="alias"
-                required
-                placeholder="Ahorros Principal"
-              />
-            </div>
-            <div>
               <label htmlFor="tipo">Tipo de Cuenta:</label>
               <select id="tipo" name="tipo" required>
                 <option value="">Seleccione</option>
-                <option value="Ahorro">Ahorro</option>
-                <option value="Corriente">Corriente</option>
-                <option value="Credito">Crédito</option>
+                <option value="2">Corriente</option>
+                <option value="3">Crédito</option>
               </select>
             </div>
             <div>
               <label htmlFor="moneda">Moneda:</label>
               <select id="moneda" name="moneda" required>
                 <option value="">Seleccione</option>
-                <option value="CRC">CRC</option>
-                <option value="USD">USD</option>
+                <option value="1">CRC</option>
+                <option value="2">USD</option>
               </select>
             </div>
             <div>

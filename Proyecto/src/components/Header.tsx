@@ -32,7 +32,6 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
         />
         <CCollapse className="navbar-collapse" visible={visible}>
           <CNavbarNav className="me-auto">
-            {/* Sección Tarjetas */}
             <CNavItem>
               <CNavLink
                 onClick={() => setActiveTab("tarjetas")}
@@ -41,8 +40,6 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
                 Tarjetas
               </CNavLink>
             </CNavItem>
-
-            {/* Dropdown de Cuentas */}
             <CDropdown variant="nav-item" popper={false}>
               <CDropdownToggle style={{ cursor: "pointer" }}>
                 Cuentas
@@ -64,7 +61,6 @@ const Header: React.FC<HeaderProps> = ({ setActiveTab }) => {
                 Transferencias
               </CNavLink>
             </CNavItem>
-
             <CNavItem>
               <CNavLink
                 onClick={() => setActiveTab("SolicitudTarjeta")}

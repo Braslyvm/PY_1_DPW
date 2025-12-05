@@ -4,10 +4,11 @@ import { Navigation, Pagination } from "swiper/modules";
 import "swiper/css";
 import "swiper/css/navigation";
 import "swiper/css/pagination";
+import { apiFetch } from "../config/Conectar";
 
 type Cuenta = {
   account_id: string;
-  alias: string;
+  alias?: string | null;
   tipo: string;
   moneda: string;
   saldo: number;
@@ -23,23 +24,52 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
   setSelectedAccountId,
 }) => {
   const [cuentas, setCuentas] = useState<Cuenta[]>([]);
-  const username = localStorage.getItem("username");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (username) {
-      fetch(
-        `https://py1dpw-production.up.railway.app/api/usuarios/${username}/cuentas`
-      )
-        .then((res) => res.json())
-        .then((data) => setCuentas(data))
-        .catch((err) => console.error("Error al cargar cuentas:", err));
-    }
-  }, [username]);
+    const cargarCuentas = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const data = await apiFetch<Cuenta[]>("/api/v1/accounts", {
+          method: "GET",
+          auth: true, 
+        });
+        setCuentas(data);
+      } catch (err: any) {
+        console.error("Error al cargar cuentas:", err);
+        setError(err.message || "Error al cargar cuentas");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    cargarCuentas();
+  }, []);
+
+  if (loading) {
+    return (
+      <section className="contenedor_main">
+        <h2>Cargando cuentas...</h2>
+      </section>
+    );
+  }
+
+  if (error) {
+    return (
+      <section className="contenedor_main">
+        <h2>Error</h2>
+        <p>{error}</p>
+      </section>
+    );
+  }
 
   if (cuentas.length === 0) {
     return (
       <section className="contenedor_main">
-        <h2>Cargando cuentas...</h2>
+        <h2>No se encontraron cuentas</h2>
+        <p>Actualmente no tienes cuentas asociadas a tu usuario.</p>
       </section>
     );
   }
@@ -62,13 +92,14 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
             {cuentas.map((cuenta) => (
               <SwiperSlide key={cuenta.account_id}>
                 <div className="cuenta-card">
-                  {/* Ícono circular */}
                   <div className="cuenta-icono">
                     <span>💳</span>
                   </div>
 
                   <div className="cuenta-info">
-                    <h3 className="cuenta-alias">{cuenta.alias}</h3>
+                    <h3 className="cuenta-alias">
+                      {cuenta.alias || cuenta.account_id}
+                    </h3>
                     <p className="cuenta-tipo">Tipo: {cuenta.tipo}</p>
                     <p className="cuenta-moneda">Moneda: {cuenta.moneda}</p>
                     <p className="cuenta-saldo">
@@ -97,8 +128,8 @@ const VerCuentas: React.FC<VerCuentasProps> = ({
             <h4>Información importante</h4>
           </div>
           <p>
-            Los saldos mostrados corresponden al último corte del día. Para consultas
-            detalladas, haz clic en "Ver detalles" en cada cuenta.
+            Los saldos mostrados corresponden al último corte del día. Para
+            consultas detalladas, haz clic en "Ver detalles" en cada cuenta.
           </p>
         </div>
       </div>

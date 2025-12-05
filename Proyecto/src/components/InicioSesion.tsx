@@ -1,6 +1,7 @@
 import React from "react";
 import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
+import { apiFetch } from "../config/Conectar"; 
 
 const InicioSesion: React.FC = () => {
   const navigate = useNavigate();
@@ -8,25 +9,32 @@ const InicioSesion: React.FC = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const username = document.getElementById("username") as HTMLInputElement;
-      const password = document.getElementById("password") as HTMLInputElement;
-
-      fetch("https://py1dpw-production.up.railway.app/api/login", {
+      const usernameInput = document.getElementById("username") as HTMLInputElement;
+      const passwordInput = document.getElementById("password") as HTMLInputElement;
+      const username = usernameInput.value;
+      const password = passwordInput.value;
+      apiFetch<{
+        mensaje: string;
+        token: string;
+        rol: number;
+        userId: string;
+      }>("/api/v1/auth/login", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          username: username.value,
-          password: password.value,
-        }),
+        body: JSON.stringify({ username, password }),
       })
-        .then((response) => {
-          if (!response.ok) throw new Error("Error en la autenticación");
-          return response.json();
-        })
         .then((data) => {
           console.log("Inicio de sesión exitoso:", data);
-          // Guardar username en localStorage
-          localStorage.setItem("username", data.user.username);
+          localStorage.setItem("token", data.token);
+          localStorage.setItem("rol", String(data.rol));
+          localStorage.setItem("userId", String(data.userId));
+          localStorage.setItem("username", username);
+          Swal.fire({
+            icon: "success",
+            title: "Bienvenido",
+            text: data.mensaje,
+            timer: 1500,
+            showConfirmButton: false,
+          });
           navigate("/dashboard");
         })
         .catch((error) => {
@@ -34,11 +42,16 @@ const InicioSesion: React.FC = () => {
           Swal.fire({
             icon: "error",
             title: "Error",
-            text: "Usuario o contraseña incorrectos",
+            text: error.message || "Usuario o contraseña incorrectos",
           });
         });
     } catch (error) {
       console.error("Error durante Login:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: "Ocurrió un error inesperado",
+      });
     }
   };
 
@@ -55,7 +68,6 @@ const InicioSesion: React.FC = () => {
   return (
     <div className="login-container">
       <form onSubmit={handleSubmit}>
-        {/* Logo/Icono superior */}
         <div style={{ textAlign: "center", marginBottom: "1rem" }}>
           <i
             className="fas fa-shield-alt"
@@ -69,11 +81,9 @@ const InicioSesion: React.FC = () => {
           ></i>
         </div>
 
-        {/* Título */}
         <h1>Banco NSFMS</h1>
         <p>Ingrese sus credenciales para acceder a su cuenta</p>
 
-        {/* Usuario */}
         <div className="form-group">
           <label htmlFor="username">Usuario</label>
 
@@ -88,8 +98,6 @@ const InicioSesion: React.FC = () => {
             />
           </div>
         </div>
-
-        {/* Contraseña */}
         <div className="form-group">
           <label htmlFor="password">Contraseña</label>
           <div className="input-wrapper">
@@ -111,8 +119,6 @@ const InicioSesion: React.FC = () => {
           </div>
         </div>
         <button type="submit">Iniciar Sesión</button>
-
-        {/* Navegación */}
         <nav>
           <button type="button" onClick={() => navigate("/recuperar-contra")}>
             ¿Olvidaste tu contraseña?
