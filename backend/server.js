@@ -568,7 +568,7 @@ function sendTransferIntent(payload) {
     throw new Error("No hay conexión con el Banco Central");
   }
 
-  centralSocket.emit("message", {
+  centralSocket.emit("event", {
     type: "transfer.intent",
     data: payload,
   });
