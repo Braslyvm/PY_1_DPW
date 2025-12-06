@@ -507,7 +507,7 @@ centralSocket.on("connect_error", (err) => {
   console.error(" Error conectando al Banco Central:", err.message);
 });
 
-centralSocket.on("message", async (msg) => {
+centralSocket.on("event", async (msg) => {
   const { type, data } = msg || {};
   console.log("WS recibido:", type, data);
 
@@ -594,7 +594,7 @@ async function handleTransferReserve(data) {
     );
 
     if (!rows.length) {
-      return centralSocket.emit("message", {
+      return centralSocket.emit("event", {
         type: "transfer.reserve.result",
         data: { id, ok: false, reason: "ACCOUNT_NOT_FOUND" },
       });
@@ -603,26 +603,26 @@ async function handleTransferReserve(data) {
     const cuenta = rows[0];
 
     if (!cuenta.permite_debito) {
-      return centralSocket.emit("message", {
+      return centralSocket.emit("event", {
         type: "transfer.reserve.result",
         data: { id, ok: false, reason: "ACCOUNT_NO_DEBIT" },
       });
     }
 
     if (Number(cuenta.saldo) < Number(amount)) {
-      return centralSocket.emit("message", {
+      return centralSocket.emit("event", {
         type: "transfer.reserve.result",
         data: { id, ok: false, reason: "NO_FUNDS" },
       });
     }
 
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.reserve.result",
       data: { id, ok: true },
     });
   } catch (err) {
     console.error("Error en handleTransferReserve:", err);
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.reserve.result",
       data: { id, ok: false, reason: "RESERVE_FAILED" },
     });
@@ -648,14 +648,14 @@ async function handleTransferCredit(data) {
     const cuenta = rows[0];
 
     if (!cuenta.permite_credito) {
-      return centralSocket.emit("message", {
+      return centralSocket.emit("event", {
         type: "transfer.credit.result",
         data: { id, ok: false, reason: "ACCOUNT_NO_CREDIT" },
       });
     }
 
     if (cuenta.moneda !== currency) {
-      return centralSocket.emit("message", {
+      return centralSocket.emit("event", {
         type: "transfer.credit.result",
         data: { id, ok: false, reason: "CURRENCY_NOT_SUPPORTED" },
       });
@@ -666,13 +666,13 @@ async function handleTransferCredit(data) {
       [to, 1, cuenta.moneda, amount, "Transferencia interbancaria recibida"]
     );
 
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.credit.result",
       data: { id, ok: true },
     });
   } catch (err) {
     console.error("Error en handleTransferCredit:", err);
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.credit.result",
       data: { id, ok: false, reason: "CREDIT_FAILED" },
     });
@@ -688,13 +688,13 @@ async function handleTransferDebit(data) {
       [from, 2, 1, amount, "Transferencia interbancaria enviada"]
     );
 
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.debit.result",
       data: { id, ok: true },
     });
   } catch (err) {
     console.error("Error en handleTransferDebit:", err);
-    centralSocket.emit("message", {
+    centralSocket.emit("event", {
       type: "transfer.debit.result",
       data: { id, ok: false, reason: "DEBIT_FAILED" },
     });
